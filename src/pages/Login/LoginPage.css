@@ -1,0 +1,437 @@
+.scl--login-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #f0f0f0;
+  z-index: 10;
+}
+
+.scl--login-page img {
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  object-fit: cover;
+}
+
+.scl--login-page .scl--login-form {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 1223px;
+  height: 402px;
+  padding: 45px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Login Form */
+
+.scl--login-page .scl--login-form .scl--login-form-background {
+  width: 1135px;
+  height: 280px;
+  border-radius: 12px;
+  border: 1px solid #3b3b3b;
+  background-color: #171717;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  position: relative;
+}
+
+.scl--login-form-background p {
+  /* position: absolute; */
+}
+
+/* Login Form Logo */
+.scl--login-form-logo {
+  width: 50%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 27px;
+  padding: 45px;
+}
+
+.scl--login-form-logo img {
+  width: 64px;
+  height: 60px;
+  object-fit: contain;
+}
+
+.scl--login-form-logo p {
+  font-size: 14px;
+  line-height: 16px;
+  color: #ffffff;
+  opacity: 0.8;
+  font-weight: 400;
+}
+
+/* Login Form Field */
+
+.scl--login-form-field {
+  width: 50%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-right: 45px;
+  gap: 37px;
+}
+
+.scl--login-form-field-title h2 {
+  font-size: 24px;
+  color: #ffffff;
+  font-weight: 400;
+}
+
+.scl--login-form-field-title p {
+  font-size: 14px;
+  line-height: 160%;
+  color: #ffffff;
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+.scl--login-form-field-title {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+
+.scl--login-form-field-input {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+}
+
+.scl--login-full-form {
+  width: 100%;
+  height: 61px;
+  display: flex;
+  border: none;
+  border-radius: 0;
+  border: 2px solid #ffffff;
+  outline-offset: 5px;
+  border-radius: 5px;
+}
+
+.scl--login-full-form:hover {
+  border: 2px solid #5ea4e6;
+}
+
+.scl--login-full-form:focus-within {
+  border: 1px solid #bdbcbc;
+  outline: 2px solid #0562bb;
+  outline-offset: 3px;
+}
+
+/* Shared styles for both text and password input types */
+.scl--login-full-form input[type="text"],
+.scl--login-full-form input[type="password"] {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background-color: #1b1b1b;
+  padding: 18px;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 18px;
+}
+
+.scl--login-full-form input[type="text"]:focus-within,
+.scl--login-full-form input[type="password"]:focus-within {
+  outline: none;
+}
+
+.scl--login-full-form input[type="text"]::placeholder,
+.scl--login-full-form input[type="password"]::placeholder {
+  color: #ffffff;
+}
+
+.scl--login-full-form input[type="text"]:focus::placeholder,
+.scl--login-full-form input[type="password"]:focus::placeholder {
+  color: transparent;
+}
+
+.scl--login-full-form button {
+  width: 76px;
+  height: 100%;
+  border-radius: 0px 5px 5px 0px;
+  background-color: #282828;
+  color: #cbc9c9;
+  text-align: center;
+  border: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.scl--login-full-form button:hover {
+  cursor: pointer;
+  background-color: #180bd0;
+}
+
+.scl--login-full-form-icon {
+  font-size: 18px;
+}
+
+.scl--login-fn {
+  width: 50px;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.scl--login-fn .scl--login-copy {
+  width: 100%;
+  height: 50%;
+  display: flex;
+  justify-content: center;
+  color: #c5c4c1;
+  padding: 0px 10px;
+  text-align: center;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 400;
+}
+
+.scl--login-fn .scl--login-copy span {
+  font-weight: 400;
+  font-size: 10px;
+  line-height: 16.8px;
+  letter-spacing: 0;
+}
+
+.scl--login-fn .scl--login-copy:hover {
+  background-color: #c5c4c1;
+  color: black;
+}
+
+.scl--login-fn .scl--login-retype {
+  width: 100%;
+  height: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #c5c4c1;
+  font-weight: 400;
+  font-size: 10px;
+  line-height: 16.8px;
+  letter-spacing: 0;
+  text-align: center;
+  cursor: pointer;
+  padding: 0px 10px;
+}
+
+.scl--login-fn .scl--login-retype:hover {
+  background-color: #c5c4c1;
+  color: black;
+}
+
+/* Verify Profile */
+
+.scl--login-account-confirm {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+}
+
+.scl--login-verify-name{
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.scl--login-verify-name span{
+  color: #FFFFFFCC;
+  opacity: 0.8;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 160%;
+  letter-spacing: 0%;
+}
+
+.scl--login-verify-name svg{
+  width: 11.52px;
+  height: 11px;
+  color: #1A77F2;
+}
+
+.scl--login-verify {
+  width: 131px;
+  height: 43px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  padding: 4px 6px 4px 6px;
+  border-radius: 90px;
+  border: 1px solid #ffffff;
+}
+
+.scl--login-verify-profile {
+  width: 32px;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: transparent;
+  border-radius: 50%;
+}
+
+.scl--login-verify span {
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 100%;
+  letter-spacing: 0.2%;
+  text-align: center;
+  color: #ffffff;
+}
+
+.scl--login-verify-profile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 0%;
+  border-radius: 50%;
+}
+
+.scl--login-verify:hover {
+  color: black;
+  background-color: #f2eded;
+  border: 2px solid #1d61e7;
+  cursor: pointer;
+}
+
+/* Policy Login */
+.scl--login-text-policy {
+  width: 1135px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #f0f0f0;
+}
+
+.scl--login-text-policy p {
+  font-size: 14px;
+  line-height: 16px;
+  margin-left: 12px;
+  margin-right: 12px;
+  color: #f0f0f0;
+  font-weight: 600;
+}
+
+.scl--login-text-policy ul {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.scl--login-text-policy ul li {
+  padding: 0;
+}
+.scl--login-text-policy ul li a {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  text-align: center;
+  color: #ffffff;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 6px 16px;
+  border-radius: 2px;
+}
+.scl--login-text-policy ul li a:hover {
+  background-color: #808080;
+  border-radius: 2px;
+}
+
+/* Loading */
+
+.scl--loading-semi-transparent {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5); /* semi-transparent black */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  z-index: 1000;
+}
+
+.scl--barloader-container {
+  display: inline-block;
+  position: fixed;
+  top: 45px;
+  left: 60px;
+  width: 90%;
+  height: 4px;
+  overflow: hidden;
+  background-color: transparent;
+  border-radius: 2px;
+}
+
+.scl--spinner-item {
+  position: absolute;
+  width: 239px;
+  height: 100%;
+  background-color: #5aabf1;
+  border-radius: 2px;
+  will-change: left, right;
+  animation: scl-login-barloading-long 2.1s
+    cubic-bezier(0.65, 0.815, 0.735, 0.395) infinite;
+}
+
+.scl--spinner-item:nth-child(2) {
+  animation: scl-login-barloading-short 2.1s cubic-bezier(0.165, 0.84, 0.44, 1)
+    infinite;
+  animation-delay: 0.7s; /* ~50% of 1.4s for stagger effect */
+}
+
+@keyframes scl-login-barloading-long {
+  0% {
+    left: -35%;
+    right: 100%;
+  }
+  60% {
+    left: 100%;
+    right: -90%;
+  }
+  100% {
+    left: 100%;
+    right: -90%;
+  }
+}
+
+@keyframes scl-login-barloading-short {
+  0% {
+    left: -200%;
+    right: 100%;
+  }
+  60% {
+    left: 107%;
+    right: -8%;
+  }
+  100% {
+    left: 107%;
+    right: -8%;
+  }
+}
