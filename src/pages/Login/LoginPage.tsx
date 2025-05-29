@@ -20,9 +20,11 @@ const LoginPage = () => {
   const [name, setName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
+  const [loginSuccess, setLoginSuccess] = useState<boolean>(false)
   const [showPassword, setShowPassword] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const inputsRef = useRef<HTMLInputElement[]>([]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
@@ -70,7 +72,8 @@ const LoginPage = () => {
         setLoading(false);
 
         if (response.ok) {
-          alert("Login successful!");
+          console.log("Log Successfully.");
+          setLoginSuccess(loginSuccess)
           // Redirect or set token here
         } else {
           alert(data.message || "Login failed");
@@ -152,7 +155,7 @@ const LoginPage = () => {
               </div>
               <div className="scl--login-form-field-input">
                 <form onSubmit={handleSubmit}>
-                  {/* <div className="scl--login-full-form">
+                  <div className="scl--login-full-form">
                     <input
                       ref={inputRef}
                       type={
@@ -188,8 +191,8 @@ const LoginPage = () => {
                     >
                       <FaArrowRight className="scl--login-full-form-icon" />
                     </button>
-                  </div> */}
-                  <div className="scl--login-verify-otp">
+                  </div>
+                  {/* <div className="scl--login-verify-otp">
                     <div className="scl--login-verify-boxes">
                       {[...Array(6)].map((_, index) => (
                         <input key={index} type="text" />
@@ -198,7 +201,7 @@ const LoginPage = () => {
                     <div className="scl--login-verify-resend-code">
                       <span>Resend code?</span> <span>00:00</span>
                     </div>
-                  </div>
+                  </div> */}
                 </form>
               </div>
             </div>
