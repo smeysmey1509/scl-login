@@ -20,7 +20,7 @@ const LoginPage = () => {
   const [name, setName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
-  const [loginSuccess, setLoginSuccess] = useState<boolean>(false)
+  const [loginSuccess, setLoginSuccess] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -73,8 +73,9 @@ const LoginPage = () => {
 
         if (response.ok) {
           console.log("Log Successfully.");
-          setLoginSuccess(loginSuccess)
-          // Redirect or set token here
+          setStep("otp"); // <-- move to OTP step
+          setInputValue("");
+          setTimeout(() => inputsRef.current[0]?.focus(), 0);
         } else {
           alert(data.message || "Login failed");
         }
@@ -156,52 +157,50 @@ const LoginPage = () => {
               <div className="scl--login-form-field-input">
                 <form onSubmit={handleSubmit}>
                   <div className="scl--login-full-form">
-                    <input
-                      ref={inputRef}
-                      type={
-                        step === "password" && !showPassword
-                          ? "password"
-                          : "text"
-                      }
-                      placeholder={
-                        step === "password" ? "Password" : "Username"
-                      }
-                      value={inputValue}
-                      onChange={handleInputChange}
-                      onClick={handleInputClick}
-                    />
-                    <div
-                      className="scl--login-fn"
-                      style={{ display: isTyping ? "flex" : "none" }}
-                    >
-                      <div className="scl--login-copy" onClick={handleCopy}>
-                        {isCopy ? <span>Copied</span> : <MdContentCopy />}
+                    {step === "otp" ? (
+                      <div className="scl--login-verify-otp">
+                        <div className="scl--login-verify-boxes">
+                          {[...Array(6)].map((_, index) => (
+                            <input key={index} type="text" />
+                          ))}
+                        </div>
+                        <div className="scl--login-verify-resend-code">
+                          <span>Resend code?</span> <span>00:00</span>
+                        </div>
                       </div>
-                      <div className="scl--login-retype" onClick={handleRetype}>
-                        <span>Retype</span>
-                      </div>
-                    </div>
-                    <button
-                      type="submit"
-                      style={{
-                        display: isTyping ? "block" : "none",
-                        backgroundColor: isTyping ? "#286BEE" : "#282828",
-                        color: isTyping ? "#ffffff" : "#cbc9c9",
-                      }}
-                    >
-                      <FaArrowRight className="scl--login-full-form-icon" />
-                    </button>
+                    ) : (
+                      <>
+                        <input
+                          ref={inputRef}
+                          type={
+                            step === "password" && !showPassword
+                              ? "password"
+                              : "text"
+                          }
+                          placeholder={
+                            step === "password" ? "Password" : "Username"
+                          }
+                          value={inputValue}
+                          onChange={handleInputChange}
+                          onClick={handleInputClick}
+                        />
+                        <div
+                          className="scl--login-fn"
+                          style={{ display: isTyping ? "flex" : "none" }}
+                        >
+                          <div className="scl--login-copy" onClick={handleCopy}>
+                            {isCopy ? <span>Copied</span> : <MdContentCopy />}
+                          </div>
+                          <div
+                            className="scl--login-retype"
+                            onClick={handleRetype}
+                          >
+                            <span>Retype</span>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
-                  {/* <div className="scl--login-verify-otp">
-                    <div className="scl--login-verify-boxes">
-                      {[...Array(6)].map((_, index) => (
-                        <input key={index} type="text" />
-                      ))}
-                    </div>
-                    <div className="scl--login-verify-resend-code">
-                      <span>Resend code?</span> <span>00:00</span>
-                    </div>
-                  </div> */}
                 </form>
               </div>
             </div>
