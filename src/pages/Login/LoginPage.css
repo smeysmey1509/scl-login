@@ -251,14 +251,14 @@
   gap: 5px;
 }
 
-.scl--login-verify-name{
+.scl--login-verify-name {
   display: flex;
   align-items: center;
   gap: 2px;
 }
 
-.scl--login-verify-name span{
-  color: #FFFFFFCC;
+.scl--login-verify-name span {
+  color: #ffffffcc;
   opacity: 0.8;
   font-weight: 400;
   font-size: 14px;
@@ -266,10 +266,10 @@
   letter-spacing: 0%;
 }
 
-.scl--login-verify-name svg{
+.scl--login-verify-name svg {
   width: 11.52px;
   height: 11px;
-  color: #1A77F2;
+  color: #1a77f2;
 }
 
 .scl--login-verify {
@@ -360,6 +360,65 @@
 .scl--login-text-policy ul li a:hover {
   background-color: #808080;
   border-radius: 2px;
+}
+
+/* Verify OTP  */
+
+.scl--login-verify-otp {
+  width: 100%;
+}
+
+.scl--login-verify-boxes {
+  display: flex;
+  justify-items: center;
+  align-items: center;
+  gap: 18px;
+}
+
+.scl--login-verify-boxes input[type="text"] {
+  width: 64px;
+  height: 64px;
+  border: 2px solid #ffffff;
+  background-color: transparent;
+  border-radius: 6px;
+  color: #1b1b1b;
+  text-align: center;
+}
+
+.scl--login-verify-boxes input[type="text"]:hover {
+  border: 2px solid #5ea4e6;
+  cursor: pointer;
+}
+
+.scl--login-verify-boxes input[type="text"]:focus-within {
+  border: 1px solid #bdbcbc;
+  outline: 2px solid #0562bb;
+  outline-offset: 3px;
+  color: #ffffff;
+  font-size: 36px;
+  font-weight: 400;
+  line-height: 100%;
+  letter-spacing: 0;
+}
+
+.scl--login-verify-resend-code {
+  margin-top: 18px;
+}
+
+.scl--login-verify-resend-code span:nth-child(1) {
+  color: #1a77f2;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 125%;
+  letter-spacing: 0;
+}
+
+.scl--login-verify-resend-code span:nth-child(2) {
+  color: #ffffff;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 125%;
+  letter-spacing: 0;
 }
 
 /* Loading */

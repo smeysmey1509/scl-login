@@ -13,12 +13,13 @@ import { FaArrowRight } from "react-icons/fa";
 import { MdContentCopy, MdVerified } from "react-icons/md";
 
 const LoginPage = () => {
-  const [step, setStep] = useState<"name" | "password">("name");
+  const [step, setStep] = useState<"name" | "password" | "otp">("name");
   const [inputValue, setInputValue] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [isCopy, setIsCopy] = useState<boolean>(false);
   const [name, setName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
   const [showPassword, setShowPassword] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -78,6 +79,14 @@ const LoginPage = () => {
         setLoading(false);
         alert("Network error");
       }
+    } else if (step === "otp") {
+      const enteredOtp = otp.join("");
+      if (enteredOtp === "123456") {
+        alert("OTP Verified! ✅");
+        // Proceed to dashboard or auth logic
+      } else {
+        alert("Invalid OTP ❌");
+      }
     }
   };
 
@@ -106,33 +115,44 @@ const LoginPage = () => {
           <div className="scl--login-form-background">
             <div className="scl--login-form-logo">
               <img src={SCLLogo} alt="" />
-              <p>
-                {step === "name" ? (
-                  "With your username to continue. This account will be available to other Sodexs applications."
-                ) : (
-                  <div className="scl--login-account-confirm">
-                    <div className="scl--login-verify-name">
-                      <span>You are verify</span>
-                      <MdVerified />
-                    </div>
-                    <div className="scl--login-verify">
-                      <div className="scl--login-verify-profile">
-                        <img src={Profile} alt="" />
-                      </div>
-                      <span>uiuxdesign</span>
-                    </div>
+              {step === "name" ? (
+                <p>
+                  With your username to continue. This account will be available
+                  to other Sodexs applications.
+                </p>
+              ) : (
+                <div className="scl--login-account-confirm">
+                  <div className="scl--login-verify-name">
+                    <span>You are verify</span>
+                    <MdVerified />
                   </div>
-                )}
-              </p>
+                  <div className="scl--login-verify">
+                    <div className="scl--login-verify-profile">
+                      <img src={Profile} alt="" />
+                    </div>
+                    <span>uiuxdesign</span>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="scl--login-form-field">
               <div className="scl--login-form-field-title">
                 <h2>Login</h2>
-                <p>Please input your username for continue your account. </p>
+                {step === "name" && (
+                  <p>Please input your username to continue your account.</p>
+                )}
+
+                {step === "password" && (
+                  <p>Please input your password to continue your account.</p>
+                )}
+
+                {step === "otp" && (
+                  <p>Please enter the 6-digit OTP code sent to your email.</p>
+                )}
               </div>
               <div className="scl--login-form-field-input">
                 <form onSubmit={handleSubmit}>
-                  <div className="scl--login-full-form">
+                  {/* <div className="scl--login-full-form">
                     <input
                       ref={inputRef}
                       type={
@@ -168,6 +188,16 @@ const LoginPage = () => {
                     >
                       <FaArrowRight className="scl--login-full-form-icon" />
                     </button>
+                  </div> */}
+                  <div className="scl--login-verify-otp">
+                    <div className="scl--login-verify-boxes">
+                      {[...Array(6)].map((_, index) => (
+                        <input key={index} type="text" />
+                      ))}
+                    </div>
+                    <div className="scl--login-verify-resend-code">
+                      <span>Resend code?</span> <span>00:00</span>
+                    </div>
                   </div>
                 </form>
               </div>
