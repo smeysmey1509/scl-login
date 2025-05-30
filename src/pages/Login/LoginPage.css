@@ -118,6 +118,16 @@
   width: 100%;
 }
 
+.scl--login-form-field-input .scl--login-error {
+  margin-top: 18px;
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 100%;
+  letter-spacing: 0;
+  color: #fb8e88;
+}
+
 .scl--login-full-form {
   width: 100%;
   height: 61px;
@@ -139,13 +149,46 @@
   outline-offset: 3px;
 }
 
+.scl--login-full-form button img {
+  width: 33px;
+  height: 29px;
+  border: 2.5px;
+}
+
+.scl--login-error-border {
+  border: 3px solid #fb8e88;
+  cursor: not-allowed;
+}
+
+.scl--login-error-border:hover {
+  border: 3px solid #fb8e88;
+}
+
+.scl--login-error-border:focus-within {
+  border: 1px solid #bdbcbc;
+  outline: 3px solid #fb8e88;
+}
+
+.scl--login-error-border button:hover {
+  background: #a49d9d;
+}
+
+.scl--btn-active {
+  background-color: #286bee !important;
+  border-radius: 6px;
+}
+
+.scl--btn-active:hover {
+  background-color: #180bd0 !important;
+}
+
 /* Shared styles for both text and password input types */
 .scl--login-full-form input[type="text"],
 .scl--login-full-form input[type="password"] {
   width: 100%;
   height: 100%;
   border: none;
-  background-color: #1b1b1b;
+  background-color: transparent;
   padding: 18px;
   border-radius: 6px;
   color: #ffffff;
@@ -168,8 +211,8 @@
 }
 
 .scl--login-full-form button {
-  width: 76px;
   height: 100%;
+  padding: 10px 18px 10px 18px;
   border-radius: 0px 5px 5px 0px;
   background-color: #282828;
   color: #cbc9c9;
@@ -181,7 +224,12 @@
 
 .scl--login-full-form button:hover {
   cursor: pointer;
-  background-color: #180bd0;
+}
+
+.scl--locked {
+  pointer-events: none; /* disables all interactions inside */
+  opacity: 0.6; /* optional: visual feedback */
+  filter: grayscale(50%); /* optional: a gray-out effect */
 }
 
 .scl--login-full-form-icon {
@@ -190,10 +238,13 @@
 
 .scl--login-fn {
   width: 50px;
-  display: none;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+
+.scl--login-full-form input:hover + .scl--login-fn {
+  display: none;
 }
 
 .scl--login-fn .scl--login-copy {
@@ -381,8 +432,11 @@
   border: 2px solid #ffffff;
   background-color: transparent;
   border-radius: 6px;
-  color: #1b1b1b;
+  color: #ffffff;
   text-align: center;
+  font-size: 36px;
+  font-weight: 400;
+  line-height: 100%;
 }
 
 .scl--login-verify-boxes input[type="text"]:hover {
@@ -419,6 +473,73 @@
   font-size: 12px;
   line-height: 125%;
   letter-spacing: 0;
+}
+
+/* Toast Messsages */
+
+.scl--login-toast {
+  position: fixed;
+  top: 45px;
+  right: 45px;
+  width: 343px;
+  height: 88px;
+  background: rgba(0, 0, 0, 0.75);
+  border-radius: 6px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.scl--login-toast-message {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  /* justify-content: center; */
+  align-items: center;
+  color: white;
+}
+
+.scl--login-toast-svg {
+  padding: 20px;
+}
+
+.scl--login-toast-title p:nth-child(1) {
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 22px;
+  letter-spacing: 0px;
+  color: #ffffff;
+}
+
+.scl--login-toast-title p:nth-child(2) {
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 18px;
+  letter-spacing: 0px;
+  color: #ffffff;
+  opacity: 0.5;
+}
+
+.scl--login-toast-bar {
+  position: absolute;
+  bottom: -1px;
+  left: 0px;
+  width: 100%;
+  height: 2px;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  background-color: #00df80;
+  animation: toastCountdown 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes toastCountdown {
+  0% {
+    width: 100%;
+  }
+  100% {
+    width: 0%;
+  }
 }
 
 /* Loading */

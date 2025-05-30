@@ -1,4 +1,5 @@
 import React, {
+  useEffect,
   useRef,
   useState,
   type ChangeEvent,
@@ -9,7 +10,7 @@ import "./LoginPage.css";
 import BackgroungImage from "../../assets/scl-loginbg.jpg";
 import Profile from "../../assets/profile.jpg";
 import SCLLogo from "../../assets/scl-logo.png";
-import { FaArrowRight } from "react-icons/fa";
+import BtnSVG from "../../assets/Icon.svg";
 import { MdContentCopy, MdVerified } from "react-icons/md";
 
 const LoginPage = () => {
@@ -20,11 +21,25 @@ const LoginPage = () => {
   const [name, setName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
-  const [loginSuccess, setLoginSuccess] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
   const [showPassword, setShowPassword] = useState(false);
+  const [attemptCount, setAttemptCount] = useState<number>(0);
+  const [passwordAttemptCount, setPasswordAttemptCount] = useState<number>(0);
+  const [isLocked, setIsLocked] = useState<boolean>(false);
+  const [showToast, setShowToast] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const inputsRef = useRef<HTMLInputElement[]>([]);
+
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => {
+        setShowToast(false);
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
@@ -45,49 +60,78 @@ const LoginPage = () => {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setError("");
 
     if (step === "name") {
-      if (!inputValue.trim()) return;
+      if (!inputValue.trim() || isLocked) {
+        setError("Username is required.");
+        return;
+      }
       setLoading(true);
-
-      // Simulate checking email (you can also fetch user profile info here if needed)
       setTimeout(() => {
         setLoading(false);
-        setStep("password");
-        setInputValue("");
-        setTimeout(() => inputRef.current?.focus(), 0); // focus after DOM update
-      }, 1000);
+
+        if (inputValue === "admin") {
+          // ✅ Correct username
+          setStep("password");
+          setName(inputValue);
+          setInputValue("");
+          setError("");
+          setAttemptCount(0);
+        } else {
+          const newCount = attemptCount + 1;
+          setAttemptCount(newCount);
+
+          if (newCount === 1) {
+            setError(
+              "The username you entered doesn't match. Please check your username again."
+            );
+          } else if (newCount === 2) {
+            setError(
+              "Still incorrect. Please checking and make sure that your username."
+            );
+          } else if (newCount >= 3) {
+            setIsLocked(true);
+          }
+        }
+      }, 5000);
     } else if (step === "password") {
+      if (!inputValue.trim() || isLocked) {
+        setError("Password is required.");
+        return;
+      }
       setLoading(true);
-      try {
-        const response = await fetch("http://localhost:5000/api/v1/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ name, password }),
-        });
-
-        const data = await response.json();
+      setTimeout(() => {
         setLoading(false);
+        if (inputValue !== "123") {
+          const newPassAttempts = passwordAttemptCount + 1;
+          setPasswordAttemptCount(newPassAttempts);
 
-        if (response.ok) {
-          console.log("Log Successfully.");
-          setStep("otp"); // <-- move to OTP step
+          if (newPassAttempts === 1) {
+            setError(
+              "The password you entered is incorrect. Please try again."
+            );
+          } else if (newPassAttempts === 2) {
+            setError("Still incorrect. Please double-check your password.");
+          } else if (newPassAttempts >= 3) {
+            setIsLocked(true);
+          }
+          return;
+        }
+
+        if (name === "admin" && password === "123") {
+          setPasswordAttemptCount(0);
+          setStep("otp");
           setInputValue("");
           setTimeout(() => inputsRef.current[0]?.focus(), 0);
         } else {
-          alert(data.message || "Login failed");
+          alert("Login failed: Invalid username or password");
         }
-      } catch (error) {
-        setLoading(false);
-        alert("Network error");
-      }
+      }, 5000);
     } else if (step === "otp") {
       const enteredOtp = otp.join("");
       if (enteredOtp === "123456") {
-        alert("OTP Verified! ✅");
-        // Proceed to dashboard or auth logic
+        setShowToast(true);
       } else {
         alert("Invalid OTP ❌");
       }
@@ -113,6 +157,18 @@ const LoginPage = () => {
   return (
     <>
       <div className={loading ? "scl--loading-semi-transparent" : ""}></div>
+      {showToast && (
+        <div className="scl--login-toast">
+          <div className="scl--login-toast-message">
+            <div className="scl--login-toast-svg">Logo</div>
+            <div className="scl--login-toast-title">
+              <p>Login successfully</p>
+              <p>Your login has sucessfully.</p>
+            </div>
+          </div>
+          <div className="scl--login-toast-bar"></div>
+        </div>
+      )}
       <div className="scl--login-page">
         <img src={BackgroungImage} alt="" />
         <div className="scl--login-form">
@@ -141,13 +197,27 @@ const LoginPage = () => {
             </div>
             <div className="scl--login-form-field">
               <div className="scl--login-form-field-title">
-                <h2>Login</h2>
-                {step === "name" && (
+                <h2>{isLocked ? "Account Temporarily Locked" : "Login"}</h2>
+
+                {step === "name" && !isLocked && (
                   <p>Please input your username to continue your account.</p>
                 )}
 
-                {step === "password" && (
+                {step === "name" && isLocked && (
+                  <p className="scl--login-error-text">
+                    You have attempted username wrong too many times.
+                  </p>
+                )}
+
+                {step === "password" && !isLocked && (
                   <p>Please input your password to continue your account.</p>
+                )}
+
+                {step === "password" && isLocked && (
+                  <p className="scl--login-error-text">
+                    Your account has been locked due to multiple failed password
+                    attempts.
+                  </p>
                 )}
 
                 {step === "otp" && (
@@ -156,34 +226,81 @@ const LoginPage = () => {
               </div>
               <div className="scl--login-form-field-input">
                 <form onSubmit={handleSubmit}>
-                  <div className="scl--login-full-form">
-                    {step === "otp" ? (
-                      <div className="scl--login-verify-otp">
-                        <div className="scl--login-verify-boxes">
-                          {[...Array(6)].map((_, index) => (
-                            <input key={index} type="text" />
-                          ))}
-                        </div>
-                        <div className="scl--login-verify-resend-code">
-                          <span>Resend code?</span> <span>00:00</span>
-                        </div>
+                  {step === "otp" ? (
+                    <div className="scl--login-verify-otp">
+                      <div className="scl--login-verify-boxes">
+                        {[...Array(6)].map((_, index) => (
+                          <input
+                            key={index}
+                            type="text"
+                            maxLength={1}
+                            value={otp[index]}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (!/^[0-9]?$/.test(value)) return;
+                              const updatedOtp = [...otp];
+                              updatedOtp[index] = value;
+                              setOtp(updatedOtp);
+                              if (value && inputsRef.current[index + 1]) {
+                                inputsRef.current[index + 1].focus();
+                              }
+
+                              // ✅ Auto-submit when all digits are filled
+                              const completedOtp = updatedOtp.join("");
+                              if (
+                                completedOtp.length === 6 &&
+                                !updatedOtp.includes("")
+                              ) {
+                                if (completedOtp === "123456") {
+                                  setShowToast(true)
+                                  // TODO: Redirect or complete login flow
+                                } else {
+                                  alert("Invalid OTP ❌");
+                                }
+                              }
+                            }}
+                            onKeyDown={(e) => {
+                              if (
+                                e.key === "Backspace" &&
+                                !otp[index] &&
+                                inputsRef.current[index - 1]
+                              ) {
+                                inputsRef.current[index - 1].focus();
+                              }
+                            }}
+                            ref={(el) => {
+                              inputsRef.current[index] = el!;
+                            }}
+                          />
+                        ))}
                       </div>
-                    ) : (
-                      <>
-                        <input
-                          ref={inputRef}
-                          type={
-                            step === "password" && !showPassword
-                              ? "password"
-                              : "text"
-                          }
-                          placeholder={
-                            step === "password" ? "Password" : "Username"
-                          }
-                          value={inputValue}
-                          onChange={handleInputChange}
-                          onClick={handleInputClick}
-                        />
+                      <div className="scl--login-verify-resend-code">
+                        <span>Resend code?</span> <span>00:00</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className={`scl--login-full-form ${
+                        (error || isLocked ? "scl--login-error-border" : "") +
+                        (isLocked ? " scl--locked" : "")
+                      }`}
+                    >
+                      <input
+                        ref={inputRef}
+                        disabled={isLocked}
+                        type={
+                          step === "password" && !showPassword
+                            ? "password"
+                            : "text"
+                        }
+                        placeholder={
+                          step === "password" ? "Password" : "Username"
+                        }
+                        value={inputValue}
+                        onChange={handleInputChange}
+                        onClick={handleInputClick}
+                      />
+                      {!isLocked && (
                         <div
                           className="scl--login-fn"
                           style={{ display: isTyping ? "flex" : "none" }}
@@ -198,10 +315,21 @@ const LoginPage = () => {
                             <span>Retype</span>
                           </div>
                         </div>
-                      </>
-                    )}
-                  </div>
+                      )}
+                      <button
+                        type="submit"
+                        className={
+                          step === "name" && inputValue === "admin"
+                            ? "scl--btn-active"
+                            : ""
+                        }
+                      >
+                        <img src={BtnSVG} alt="" />
+                      </button>
+                    </div>
+                  )}
                 </form>
+                {error && <span className="scl--login-error">{error}</span>}
               </div>
             </div>
           </div>
