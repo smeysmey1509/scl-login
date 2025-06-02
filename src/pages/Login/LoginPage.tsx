@@ -5,6 +5,7 @@ import Profile from "../../assets/profile.jpg";
 import SCLLogo from "../../assets/scl-logo.png";
 import BtnSVG from "../../assets/Icon.svg";
 import {MdContentCopy, MdVerified} from "react-icons/md";
+import {FaCheckCircle} from "react-icons/fa";
 
 const LoginPage = () => {
     const [step, setStep] = useState<"name" | "password" | "otp">("name");
@@ -21,7 +22,6 @@ const LoginPage = () => {
     const [otpCount, setOtpCount] = useState<number>(0);
     const [isLocked, setIsLocked] = useState<boolean>(false);
     const [showToast, setShowToast] = useState(false);
-
     const inputRef = useRef<HTMLInputElement>(null);
     const inputsRef = useRef<HTMLInputElement[]>([]);
 
@@ -29,7 +29,7 @@ const LoginPage = () => {
         if (showToast) {
             const timer = setTimeout(() => {
                 setShowToast(false);
-            }, 3000);
+            }, 5000);
 
             return () => clearTimeout(timer);
         }
@@ -171,7 +171,9 @@ const LoginPage = () => {
             {showToast && (
                 <div className="scl--login-toast">
                     <div className="scl--login-toast-message">
-                        <div className="scl--login-toast-svg">Logo</div>
+                        <div className="scl--login-toast-svg">
+                            <FaCheckCircle />
+                        </div>
                         <div className="scl--login-toast-title">
                             <p>Login successfully</p>
                             <p>Your login has sucessfully.</p>
@@ -180,6 +182,18 @@ const LoginPage = () => {
                     <div className="scl--login-toast-bar"></div>
                 </div>
             )}
+            <div className="scl--login-toast">
+                <div className="scl--login-toast-message">
+                    <div className="scl--login-toast-svg">
+                        <FaCheckCircle />
+                    </div>
+                    <div className="scl--login-toast-title">
+                        <p>Login successfully</p>
+                        <p>Your login has sucessfully.</p>
+                    </div>
+                </div>
+                <div className="scl--login-toast-bar"></div>
+            </div>
             <div className="scl--login-page">
                 <img src={BackgroungImage} alt=""/>
                 <div className="scl--login-form">

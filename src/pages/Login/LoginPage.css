@@ -501,25 +501,46 @@
   right: 45px;
   width: 343px;
   height: 88px;
-  background: rgba(0, 0, 0, 0.75);
+  background: #1B1B1BE5;
   border-radius: 6px;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
-  border: 1px solid rgba(0, 0, 0, 0.3);
 }
 
 .scl--login-toast-message {
   width: 100%;
   height: 100%;
   display: flex;
-  /* justify-content: center; */
   align-items: center;
   color: white;
 }
 
 .scl--login-toast-svg {
-  padding: 20px;
+  width: 25%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(50% 50% at 45% 50%, rgba(0, 237, 81, 0.19) 0%, rgba(0, 237, 123, 0) 115%);
+}
+
+.scl--login-toast-svg svg{
+  width: 37px;
+  height: 37px;
+  object-fit: contain;
+  color: #00df80;
+  border: 6px solid rgb(0, 0, 0, 0.20);;
+  border-radius: 50%;
+}
+
+.scl--login-toast-title{
+  width: 75%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
 }
 
 .scl--login-toast-title p:nth-child(1) {
@@ -541,19 +562,19 @@
 
 .scl--login-toast-bar {
   position: absolute;
-  bottom: -1px;
-  left: 0px;
+  bottom: 0px;
+  left: 4px;
   width: 100%;
   height: 2px;
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
   background-color: #00df80;
-  animation: toastCountdown 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: toastCountdown 5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 @keyframes toastCountdown {
   0% {
-    width: 100%;
+    width: 98%;
   }
   100% {
     width: 0%;
