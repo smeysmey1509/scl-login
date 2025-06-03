@@ -1,6 +1,6 @@
 import React, {type FormEvent, useEffect, useRef, useState,} from "react";
 import "./LoginPage.css";
-import BackgroungImage from "../../assets/scl-loginbg.jpg";
+import BackgroundImage from "../../assets/scl-loginbg.jpg";
 import Profile from "../../assets/profile.jpg";
 import SCLLogo from "../../assets/scl-logo.png";
 import BtnSVG from "../../assets/Icon.svg";
@@ -23,7 +23,8 @@ const LoginPage = () => {
     const [passwordAttemptCount, setPasswordAttemptCount] = useState<number>(0);
     const [otpCount, setOtpCount] = useState<number>(0);
     const [isLocked, setIsLocked] = useState<boolean>(false);
-    const [showToast, setShowToast] = useState(false);
+    const [showToast, setShowToast] = useState<boolean>(false);
+    const [toastType, setToastType] = useState<string>('');
     const [timer, setTimer] = useState<number>(0);
     const [intervalId, setIntervalId] = useState<number | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -68,9 +69,24 @@ const LoginPage = () => {
             }
             setLoading(true);
 
+            // Timeout helper (30 seconds)
+            const timeoutPromise = new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve({ error: 'timeout' });
+                }, 5000);
+            });
+
             try {
-                // Call API to check username
-                const res = await checkUsername(inputValue.trim());
+                // Race API call vs timeout
+                const res = await Promise.race([
+                    checkUsername(inputValue.trim()),
+                    timeoutPromise,
+                ])
+
+                if (res?.error === 'timeout') {
+                    setShowToast(true);
+                    setToastType('no-connection');
+                }
 
                 // checkUsername in your hook should throw on failure or return success boolean
                 if (res?.success) {
@@ -91,8 +107,13 @@ const LoginPage = () => {
                     }
                 }
             } catch (err) {
-                setError('Something went wrong. Please try again later.');
-                console.log(err)
+                if (err.message === "timeout") {
+                    setError("No internet connection. Please try again later.");
+                    setToastType('no-connection')
+                } else {
+                    setError("Something went wrong. Please try again later.");
+                }
+                console.log("Username check error:", err);
             } finally {
                 setLoading(false);
             }
@@ -219,16 +240,14 @@ const LoginPage = () => {
         return `${minutes}:${secs}`;
     };
 
-    // const isTyping = inputValue.trim() !== "";
-
     return (
         <>
             <div className={loading ? "scl--loading-semi-transparent" : ""}></div>
             {showToast && (
-                <ToasterMessage type={"success"}/>
+                <ToasterMessage type={toastType}/>
             )}
             <div className="scl--login-page">
-                <img src={BackgroungImage} alt=""/>
+                <img src={BackgroundImage} alt=""/>
                 <div className="scl--login-form">
                     <div className="scl--login-form-background">
                         <div className="scl--login-form-logo">
@@ -369,7 +388,7 @@ const LoginPage = () => {
                                             <button
                                                 type="submit"
                                                 className={
-                                                    step === "username" && inputValue === "admin"
+                                                    step === "username"
                                                         ? "scl--btn-active"
                                                         : ""
                                                 }
