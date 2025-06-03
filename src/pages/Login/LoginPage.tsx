@@ -5,14 +5,16 @@ import Profile from "../../assets/profile.jpg";
 import SCLLogo from "../../assets/scl-logo.png";
 import BtnSVG from "../../assets/Icon.svg";
 import {MdContentCopy, MdVerified} from "react-icons/md";
-import {FaCheckCircle} from "react-icons/fa";
+import ToasterMessage from "../../components/ToasterMessages/ToasterMessage.tsx";
+import {useAuth} from "../../hooks/useAuth.ts";
 
 const LoginPage = () => {
-    const [step, setStep] = useState<"name" | "password" | "otp">("name");
+    const {checkUsername, loginUser} = useAuth();
+    const [step, setStep] = useState<"username" | "password" | "otp">("username");
     const [inputValue, setInputValue] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
     const [isCopy, setIsCopy] = useState<boolean>(false);
-    const [name, setName] = useState<string>("");
+    const [username, setUsername] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
     const [error, setError] = useState<string>("");
@@ -22,8 +24,11 @@ const LoginPage = () => {
     const [otpCount, setOtpCount] = useState<number>(0);
     const [isLocked, setIsLocked] = useState<boolean>(false);
     const [showToast, setShowToast] = useState(false);
+    const [timer, setTimer] = useState<number>(0);
+    const [intervalId, setIntervalId] = useState<number | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const inputsRef = useRef<HTMLInputElement[]>([]);
+    // const navigate = useNavigate();
 
     useEffect(() => {
         if (showToast) {
@@ -37,7 +42,7 @@ const LoginPage = () => {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setInputValue(e.target.value);
-        if (step == "name") setName(e.target.value);
+        if (step == "username") setUsername(e.target.value);
         if (step == "password") setPassword(e.target.value);
     };
 
@@ -56,95 +61,73 @@ const LoginPage = () => {
         event.preventDefault();
         setError("");
 
-        if (step === "name") {
+        if (step === "username") {
             if (!inputValue.trim() || isLocked) {
                 setError("Username is required.");
                 return;
             }
             setLoading(true);
-            setTimeout(() => {
-                setLoading(false);
 
-                if (inputValue === "admin") {
-                    // ✅ Correct username
-                    setStep("password");
-                    setName(inputValue);
-                    setInputValue("");
-                    setError("");
+            try {
+                // Call API to check username
+                const res = await checkUsername(inputValue.trim());
+
+                // checkUsername in your hook should throw on failure or return success boolean
+                if (res?.success) {
+                    setStep('password');
+                    setInputValue('');
                     setAttemptCount(0);
                 } else {
                     const newCount = attemptCount + 1;
                     setAttemptCount(newCount);
 
                     if (newCount === 1) {
-                        setError(
-                            "The username you entered doesn't match. Please check your username again."
-                        );
+                        setError("The username you entered doesn't match. Please check your username again.");
                     } else if (newCount === 2) {
-                        setError(
-                            "Still incorrect. Please checking and make sure that your username."
-                        );
+                        setError("Still incorrect. Please check and make sure that your username.");
                     } else if (newCount >= 3) {
                         setIsLocked(true);
+                        setError('Your account has been locked due to multiple failed username attempts.');
                     }
                 }
-            }, 100);
+            } catch (err) {
+                setError('Something went wrong. Please try again later.');
+                console.log(err)
+            } finally {
+                setLoading(false);
+            }
         } else if (step === "password") {
             if (!inputValue.trim() || isLocked) {
                 setError("Password is required.");
                 return;
             }
             setLoading(true);
-            setTimeout(() => {
-                setLoading(false);
-                if (inputValue !== "123") {
+            try {
+                const data = await loginUser(inputValue.trim());
+
+                if (data?.token) {
+                    // Login success — move to OTP or next step
+                    setPasswordAttemptCount(0);
+                    setStep('otp');
+                    setInputValue('');
+                    setTimeout(() => inputsRef.current[0]?.focus(), 0);
+                } else {
                     const newPassAttempts = passwordAttemptCount + 1;
                     setPasswordAttemptCount(newPassAttempts);
 
                     if (newPassAttempts === 1) {
-                        setError(
-                            "The password you entered is incorrect. Please try again."
-                        );
+                        setError('The password you entered is incorrect. Please try again.');
                     } else if (newPassAttempts === 2) {
-                        setError("Still incorrect. Please double-check your password.");
+                        setError('Still incorrect. Please double-check your password.');
                     } else if (newPassAttempts >= 3) {
                         setIsLocked(true);
+                        setError('Your account has been locked due to multiple failed password attempts.');
                     }
-                    return;
                 }
-
-                if (name === "admin" && password === "123") {
-                    setPasswordAttemptCount(0);
-                    setStep("otp");
-                    setInputValue("");
-                    setTimeout(() => inputsRef.current[0]?.focus(), 0);
-                } else {
-                    alert("Login failed: Invalid username or password");
-                }
-            }, 100);
-        } else if (step === "otp") {
-            const enteredOtp = otp.join("").trim();
-
-            // Check if OTP is 6 digits
-            if (enteredOtp.length !== 6 || !/^\d{6}$/.test(enteredOtp)) {
-                setError("Please enter a valid 6-digit OTP.");
-                setShowToast(true);
-                return;
-            }
-
-            if (enteredOtp !== "123456") {
-                const newOtpAttempts = otpCount + 1;
-                setOtpCount(newOtpAttempts);
-
-                if (newOtpAttempts === 1) {
-                    setError("Your verification code is incorrect. Please check and try again.")
-                } else if (newOtpAttempts === 2) {
-                    setError("Still incorrect. Please double-check your password.");
-                } else if (newOtpAttempts >= 3) {
-                    setIsLocked(true);
-                }
-            } else {
-                alert("Invalid OTP ❌");
+            } catch {
+                setError('Invalid credentials.');
+            } finally {
+                setLoading(false);
             }
         }
     };
@@ -163,44 +146,94 @@ const LoginPage = () => {
         }
     };
 
+    const handleOtpChange = (index: number, value: string) => {
+        // Only allow digits or empty string
+        if (!/^[0-9]?$/.test(value)) return;
+
+        const updatedOtp = [...otp];
+        updatedOtp[index] = value;
+        setOtp(updatedOtp);
+
+        // Move to next input if character is typed
+        if (value && inputsRef.current[index + 1]) {
+            inputsRef.current[index + 1].focus();
+        }
+
+        // ✅ Auto-submit when all digits are filled
+        const enteredOtp = updatedOtp.join("").trim();
+
+        if (enteredOtp.length === 6) {
+            if (!/^\d{6}$/.test(enteredOtp)) {
+                setError("Please enter a valid 6-digit OTP.");
+                setShowToast(true);
+                return;
+            }
+
+            if (enteredOtp !== "123456") {
+                const newOtpAttempts = otpCount + 1;
+                setOtpCount(newOtpAttempts);
+
+                if (newOtpAttempts === 1) {
+                    setError("Your verification code is incorrect. Please check and try again.");
+                } else if (newOtpAttempts === 2) {
+                    setError("Still incorrect. Please double-check your code.");
+                } else if (newOtpAttempts >= 3) {
+                    setError("You’ve entered the wrong OTP 3 times. You're now locked out.");
+                    setIsLocked(true);
+                }
+            } else {
+                setShowToast(true);
+                // navigate("/dashboard");
+            }
+        }
+    };
+
+    const startCountdown = () => {
+        if (intervalId) return; // prevent multiple intervals
+
+        setTimer(20);
+
+        const id = window.setInterval(() => {
+            setTimer((prev) => {
+                if (prev <= 1) {
+                    clearInterval(id);
+                    setIntervalId(null);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        setIntervalId(id);
+    };
+
+    const handleResetCode = () => {
+        if (timer > 0) return;
+        console.log('Resending OTP...')
+        startCountdown()
+    }
+
+    const formatTime = (seconds: number): string => {
+        const minutes = String(Math.floor(seconds / 60)).padStart(2, "0");
+        const secs = String(seconds % 60).padStart(2, "0");
+        return `${minutes}:${secs}`;
+    };
+
     // const isTyping = inputValue.trim() !== "";
 
     return (
         <>
             <div className={loading ? "scl--loading-semi-transparent" : ""}></div>
             {showToast && (
-                <div className="scl--login-toast">
-                    <div className="scl--login-toast-message">
-                        <div className="scl--login-toast-svg">
-                            <FaCheckCircle />
-                        </div>
-                        <div className="scl--login-toast-title">
-                            <p>Login successfully</p>
-                            <p>Your login has sucessfully.</p>
-                        </div>
-                    </div>
-                    <div className="scl--login-toast-bar"></div>
-                </div>
+                <ToasterMessage type={"success"}/>
             )}
-            <div className="scl--login-toast">
-                <div className="scl--login-toast-message">
-                    <div className="scl--login-toast-svg">
-                        <FaCheckCircle />
-                    </div>
-                    <div className="scl--login-toast-title">
-                        <p>Login successfully</p>
-                        <p>Your login has sucessfully.</p>
-                    </div>
-                </div>
-                <div className="scl--login-toast-bar"></div>
-            </div>
             <div className="scl--login-page">
                 <img src={BackgroungImage} alt=""/>
                 <div className="scl--login-form">
                     <div className="scl--login-form-background">
                         <div className="scl--login-form-logo">
                             <img src={SCLLogo} alt=""/>
-                            {step === "name" ? (
+                            {step === "username" ? (
                                 <p>
                                     With your username to continue. This account will be available
                                     to other Sodexs applications.
@@ -224,11 +257,11 @@ const LoginPage = () => {
                             <div className="scl--login-form-field-title">
                                 <h2>{isLocked ? "Account Temporarily Locked" : "Login"}</h2>
 
-                                {step === "name" && !isLocked && (
+                                {step === "username" && !isLocked && (
                                     <p>Please input your username to continue your account.</p>
                                 )}
 
-                                {step === "name" && isLocked && (
+                                {step === "username" && isLocked && (
                                     <p className="scl--login-error-text">
                                         You have attempted username wrong too many times.
                                     </p>
@@ -269,49 +302,7 @@ const LoginPage = () => {
                                                         type="text"
                                                         maxLength={1}
                                                         value={otp[index]}
-                                                        onChange={(e) => {
-                                                            const value = e.target.value;
-
-                                                            // Only allow digits or empty string
-                                                            if (!/^[0-9]?$/.test(value)) return;
-
-                                                            const updatedOtp = [...otp];
-                                                            updatedOtp[index] = value;
-                                                            setOtp(updatedOtp);
-
-                                                            // Move to next input if character is typed
-                                                            if (value && inputsRef.current[index + 1]) {
-                                                                inputsRef.current[index + 1].focus();
-                                                            }
-
-                                                            // ✅ Auto-submit when all digits are filled
-                                                            const enteredOtp = updatedOtp.join("").trim();
-
-                                                            // Only proceed if all 6 digits are filled
-                                                            if (enteredOtp.length === 6) {
-                                                                if (!/^\d{6}$/.test(enteredOtp)) {
-                                                                    setError("Please enter a valid 6-digit OTP.");
-                                                                    setShowToast(true);
-                                                                    return;
-                                                                }
-
-                                                                if (enteredOtp !== "123456") {
-                                                                    const newOtpAttempts = otpCount + 1;
-                                                                    setOtpCount(newOtpAttempts);
-
-                                                                    if (newOtpAttempts === 1) {
-                                                                        setError("Your verification code is incorrect. Please check and try again.");
-                                                                    } else if (newOtpAttempts === 2) {
-                                                                        setError("Still incorrect. Please double-check your code.");
-                                                                    } else if (newOtpAttempts >= 3) {
-                                                                        setError("You’ve entered the wrong OTP 3 times. You're now locked out.");
-                                                                        setIsLocked(true);
-                                                                    }
-                                                                } else {
-                                                                    setShowToast(true);
-                                                                }
-                                                            }
-                                                        }}
+                                                        onChange={(e) => handleOtpChange(index, e.target.value)}
                                                         onKeyDown={(e) => {
                                                             if (
                                                                 e.key === "Backspace" &&
@@ -329,7 +320,13 @@ const LoginPage = () => {
                                             </div>
                                             {step === "otp" && <span className="scl--otp-error">{error}</span>}
                                             <div className="scl--login-verify-resend-code">
-                                                <span>Resend code?</span> <span>00:00</span>
+                                                <span onClick={handleResetCode} style={{
+                                                    cursor: timer === 0 ? "" : "not-allowed",
+                                                    textDecoration: timer === 0 ? "" : "none",
+                                                    color: timer === 0 ? "#0d6efd" : "#999",
+                                                    userSelect: "none",
+                                                }}>Resend code?</span>
+                                                <span>{formatTime(timer)}</span>
                                             </div>
                                         </div>
                                     ) : (
@@ -372,7 +369,7 @@ const LoginPage = () => {
                                             <button
                                                 type="submit"
                                                 className={
-                                                    step === "name" && inputValue === "admin"
+                                                    step === "username" && inputValue === "admin"
                                                         ? "scl--btn-active"
                                                         : ""
                                                 }
@@ -388,8 +385,8 @@ const LoginPage = () => {
                     </div>
                     {loading && (
                         <span className="scl--barloader-container">
-              <span className="scl--spinner-item"></span>
-            </span>
+                            <span className="scl--spinner-item"></span>
+                        </span>
                     )}
                     <div className="scl--login-text-policy">
                         <p>English (United State)</p>
