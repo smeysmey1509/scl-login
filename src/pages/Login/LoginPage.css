@@ -119,6 +119,7 @@
 }
 
 .scl--login-form-field-input .scl--login-error {
+    visibility: hidden;
     margin-top: 18px;
     font-family: "Inter", sans-serif;
     font-weight: 400;
@@ -126,6 +127,14 @@
     line-height: 100%;
     letter-spacing: 0;
     color: #fb8e88;
+    opacity: 0;
+    transition: visibility 0s linear 0.3s, opacity 0.3s ease-in-out;
+}
+
+.scl--login-error.visible{
+    visibility: visible;
+    opacity: 1;
+    transition-delay: 0s;
 }
 
 .scl--login-full-form {
@@ -155,17 +164,17 @@
 }
 
 .scl--login-error-border {
-    border: 3px solid #fb8e88;
+    border: 2px solid #fb8e88;
     cursor: not-allowed;
 }
 
 .scl--login-error-border:hover {
-    border: 3px solid #fb8e88;
+    border: 2px solid #fb8e88;
 }
 
 .scl--login-error-border:focus-within {
     border: 1px solid #bdbcbc;
-    outline: 3px solid #fb8e88;
+    outline: 2px solid #fb8e88;
 }
 
 .scl--login-error-border button:hover {
@@ -364,7 +373,7 @@
     font-weight: 400;
     font-size: 14px;
     line-height: 100%;
-    letter-spacing: 0.2px;
+    letter-spacing: 0;
     text-align: center;
     color: #ffffff;
 }
@@ -373,7 +382,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center 0%;
+    object-position: center 0;
     border-radius: 50%;
 }
 

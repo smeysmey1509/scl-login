@@ -170,3 +170,31 @@
         width: 0%;
     }
 }
+
+/* Fade and slide in */
+.scl--login-toast-animate-in {
+    opacity: 0;
+    transform: translateY(-1000px);
+    animation: toastFadeSlideIn 0.5s ease forwards;
+}
+
+/* Fade and slide out */
+.scl--login-toast-animate-out {
+    opacity: 1;
+    transform: translateY(0px);
+    animation: toastFadeSlideOut 0.5s ease forwards;
+}
+
+@keyframes toastFadeSlideIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes toastFadeSlideOut {
+    to {
+        opacity: 0;
+        transform: translateY(-1000px);
+    }
+}

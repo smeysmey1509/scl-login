@@ -63,6 +63,16 @@ const LoginPage = () => {
         event.preventDefault();
         setError("");
 
+        // ⏳ Wait 5 seconds before checking username
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        // ⏱ Timeout after 5 more seconds if server doesn't respond
+        const timeoutPromise = new Promise<{ success: false; error: string }>((resolve) => {
+            setTimeout(() => {
+                resolve({success: false, error: "timeout"});
+            }, 10);
+        });
+
         if (step === "username") {
             if (!inputValue.trim() || isLocked) {
                 setError("Username is required.");
@@ -72,16 +82,6 @@ const LoginPage = () => {
             setLoading(true);
 
             try {
-                // ⏳ Wait 5 seconds before checking username
-                await new Promise((resolve) => setTimeout(resolve, 1000));
-
-                // ⏱ Timeout after 5 more seconds if server doesn't respond
-                const timeoutPromise = new Promise<{ success: false; error: string }>((resolve) => {
-                    setTimeout(() => {
-                        resolve({success: false, error: "timeout"});
-                    }, 1000);
-                });
-
                 const res = await Promise.race([
                     checkUsername(inputValue.trim()),
                     timeoutPromise,
@@ -112,8 +112,6 @@ const LoginPage = () => {
                     setIsLocked(true);
                     setError('Your account has been locked due to multiple failed username attempts.');
                 }
-                // setError("Something went wrong. Please try again.");
-                console.error("Username check error:", err);
             } finally {
                 setLoading(false);
             }
@@ -124,7 +122,17 @@ const LoginPage = () => {
             }
             setLoading(true);
             try {
-                const data = await loginUser(inputValue.trim());
+                const data = await Promise.race([
+                    loginUser(inputValue.trim()),
+                    timeoutPromise
+                ])
+
+                if(data?.error){
+                    setShowToast(true);
+                    setToastType('no-connection');
+                    setError("Connection timed out. Please try again.");
+                    return;
+                }
 
                 if (data?.success) {
                     setStep('otp');
@@ -429,7 +437,8 @@ const LoginPage = () => {
                                         </div>
                                     )}
                                 </form>
-                                {step !== "otp" && error && <span className="scl--login-error">{error}</span>}
+                                <span className={`scl--login-error ${error ? "visible" : ""}`}>{error}</span>
+                                {/*{step !== "otp" && error && <span className={`scl--login-error ${error ? "visible" : ""}`}>{error}</span>}*/}
                             </div>
                         </div>
                     </div>
