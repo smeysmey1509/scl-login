@@ -7,6 +7,8 @@ import BtnSVG from "../../assets/Icon.svg";
 import {MdContentCopy, MdVerified} from "react-icons/md";
 import ToasterMessage from "../../components/ToasterMessages/ToasterMessage.tsx";
 import {useAuth} from "../../hooks/useAuth.ts";
+import {validateOTP} from "../../api/otpAuth.ts";
+import {useNavigate} from "react-router";
 
 const LoginPage = () => {
     const {checkUsername, loginUser} = useAuth();
@@ -29,7 +31,7 @@ const LoginPage = () => {
     const [intervalId, setIntervalId] = useState<number | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const inputsRef = useRef<HTMLInputElement[]>([]);
-    // const navigate = useNavigate();
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (showToast) {
@@ -72,7 +74,7 @@ const LoginPage = () => {
             // Timeout helper (30 seconds)
             const timeoutPromise = new Promise((resolve) => {
                 setTimeout(() => {
-                    resolve({ error: 'timeout' });
+                    resolve({error: 'timeout'});
                 }, 5000);
             });
 
@@ -126,10 +128,9 @@ const LoginPage = () => {
             try {
                 const data = await loginUser(inputValue.trim());
 
-                if (data?.token) {
-                    // Login success — move to OTP or next step
-                    setPasswordAttemptCount(0);
+                if (data?.success) {
                     setStep('otp');
+                    setPasswordAttemptCount(0);
                     setInputValue('');
                     setTimeout(() => inputsRef.current[0]?.focus(), 0);
                 } else {
@@ -167,7 +168,7 @@ const LoginPage = () => {
         }
     };
 
-    const handleOtpChange = (index: number, value: string) => {
+    const handleOtpChange = async (index: number, value: string) => {
         // Only allow digits or empty string
         if (!/^[0-9]?$/.test(value)) return;
 
@@ -190,21 +191,44 @@ const LoginPage = () => {
                 return;
             }
 
-            if (enteredOtp !== "123456") {
-                const newOtpAttempts = otpCount + 1;
-                setOtpCount(newOtpAttempts);
+            try {
+                const data = await validateOTP({
+                    method: 'email',
+                    otp: (enteredOtp),
+                    username: "hemsmey59@gmail.com",
+                });
 
-                if (newOtpAttempts === 1) {
-                    setError("Your verification code is incorrect. Please check and try again.");
-                } else if (newOtpAttempts === 2) {
-                    setError("Still incorrect. Please double-check your code.");
-                } else if (newOtpAttempts >= 3) {
-                    setError("You’ve entered the wrong OTP 3 times. You're now locked out.");
-                    setIsLocked(true);
+                if (!data.success) {
+                    setError(data.errorMessage || "OTP verification failed.");
+                    return;
                 }
-            } else {
-                setShowToast(true);
-                // navigate("/dashboard");
+
+                if (data.success) {
+                    // Optionally store token
+                    // if (data.token) {
+                    //     localStorage.setItem("token", data.token);
+                    // }
+
+                    setShowToast(true);
+                    setToastType('success');
+                    setError("");
+                    // navigate("/dashboard");
+                } else {
+                    const newOtpAttempts = otpCount + 1;
+                    setOtpCount(newOtpAttempts);
+
+                    if (newOtpAttempts === 1) {
+                        setError("Your verification code is incorrect. Please check and try again.");
+                    } else if (newOtpAttempts === 2) {
+                        setError("Still incorrect. Please double-check your code.");
+                    } else if (newOtpAttempts >= 3) {
+                        setError("You’ve entered the wrong OTP 3 times. You're now locked out.");
+                        setIsLocked(true);
+                    }
+                }
+            } catch (error) {
+                console.error("OTP validation failed:", error);
+                setError("Failed to verify OTP. Please try again.");
             }
         }
     };
@@ -242,7 +266,7 @@ const LoginPage = () => {
 
     return (
         <>
-            <div className={loading ? "scl--loading-semi-transparent" : ""}></div>
+            <div className={loading ? "scl--loading-semi-transparent" : "   "}></div>
             {showToast && (
                 <ToasterMessage type={toastType}/>
             )}
@@ -370,7 +394,7 @@ const LoginPage = () => {
                                                 onChange={handleInputChange}
                                                 onClick={handleInputClick}
                                             />
-                                            {!isLocked && (
+                                            {!isLocked && inputValue.trim().length >= 1 && (
                                                 <div
                                                     className="scl--login-fn"
                                                 >
@@ -385,16 +409,24 @@ const LoginPage = () => {
                                                     </div>
                                                 </div>
                                             )}
-                                            <button
-                                                type="submit"
-                                                className={
-                                                    step === "username"
-                                                        ? "scl--btn-active"
-                                                        : ""
-                                                }
-                                            >
-                                                <img src={BtnSVG} alt=""/>
-                                            </button>
+                                            {inputValue.trim().length >= 1 && (
+                                                <button
+                                                    type="submit"
+                                                    className={
+                                                        step === "username"
+                                                            ? "scl--btn-active"
+                                                            : ""
+                                                    }
+                                                >
+                                                    <svg width="37" height="31" viewBox="0 0 37 31" fill="none"
+                                                         xmlns="http://www.w3.org/2000/svg">
+                                                        <path
+                                                            d="M34.5 15.5L35.4959 14.7445L36.069 15.5L35.4959 16.2555L34.5 15.5ZM1.5 16.75C0.809643 16.75 0.25 16.1904 0.25 15.5C0.25 14.8096 0.809643 14.25 1.5 14.25V16.75ZM23.5 1L24.4959 0.244517L35.4959 14.7445L34.5 15.5L33.5041 16.2555L22.5041 1.75548L23.5 1ZM34.5 15.5L35.4959 16.2555L24.4959 30.7555L23.5 30L22.5041 29.2445L33.5041 14.7445L34.5 15.5ZM34.5 15.5V16.75H1.5V15.5V14.25H34.5V15.5Z"
+                                                            fill="#CBC9C9"
+                                                        />
+                                                    </svg>
+                                                </button>
+                                            )}
                                         </div>
                                     )}
                                 </form>

@@ -147,7 +147,7 @@
     outline-offset: 3px;
 }
 
-.scl--login-full-form button img {
+.scl--login-full-form button svg {
     width: 33px;
     height: 29px;
     border: 2.5px;
@@ -236,14 +236,19 @@
 
 .scl--login-fn {
     width: 50px;
+    display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    opacity: 0;
 }
 
-.scl--login-error-border input:hover ~ .scl--login-fn {
-    display: none !important;
-    padding: 12px;
+.scl--login-fn:hover {
+    opacity: 1;
+}
+
+.scl--login-full-form input:hover ~ .scl--login-fn {
+    opacity: 1;
 }
 
 .scl--login-fn .scl--login-copy {
