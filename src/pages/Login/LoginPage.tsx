@@ -3,7 +3,6 @@ import "./LoginPage.css";
 import BackgroundImage from "../../assets/scl-loginbg.jpg";
 import Profile from "../../assets/profile.jpg";
 import SCLLogo from "../../assets/scl-logo.png";
-import BtnSVG from "../../assets/Icon.svg";
 import {MdContentCopy, MdVerified} from "react-icons/md";
 import ToasterMessage from "../../components/ToasterMessages/ToasterMessage.tsx";
 import {useAuth} from "../../hooks/useAuth.ts";
@@ -69,53 +68,52 @@ const LoginPage = () => {
                 setError("Username is required.");
                 return;
             }
+
             setLoading(true);
 
-            // Timeout helper (30 seconds)
-            const timeoutPromise = new Promise((resolve) => {
-                setTimeout(() => {
-                    resolve({error: 'timeout'});
-                }, 5000);
-            });
-
             try {
-                // Race API call vs timeout
+                // ⏳ Wait 5 seconds before checking username
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                // ⏱ Timeout after 5 more seconds if server doesn't respond
+                const timeoutPromise = new Promise<{ success: false; error: string }>((resolve) => {
+                    setTimeout(() => {
+                        resolve({success: false, error: "timeout"});
+                    }, 1000);
+                });
+
                 const res = await Promise.race([
                     checkUsername(inputValue.trim()),
                     timeoutPromise,
-                ])
+                ]);
 
                 if (res?.error === 'timeout') {
                     setShowToast(true);
                     setToastType('no-connection');
+                    setError("Connection timed out. Please try again.");
+                    return;
                 }
 
-                // checkUsername in your hook should throw on failure or return success boolean
                 if (res?.success) {
                     setStep('password');
                     setInputValue('');
                     setAttemptCount(0);
-                } else {
-                    const newCount = attemptCount + 1;
-                    setAttemptCount(newCount);
+                }
 
-                    if (newCount === 1) {
-                        setError("The username you entered doesn't match. Please check your username again.");
-                    } else if (newCount === 2) {
-                        setError("Still incorrect. Please check and make sure that your username.");
-                    } else if (newCount >= 3) {
-                        setIsLocked(true);
-                        setError('Your account has been locked due to multiple failed username attempts.');
-                    }
-                }
             } catch (err) {
-                if (err.message === "timeout") {
-                    setError("No internet connection. Please try again later.");
-                    setToastType('no-connection')
-                } else {
-                    setError("Something went wrong. Please try again later.");
+                const newCount = attemptCount + 1;
+                setAttemptCount(newCount);
+
+                if (newCount === 1) {
+                    setError("The username you entered doesn't match. Please check your username again.");
+                } else if (newCount === 2) {
+                    setError("Still incorrect. Please check and make sure that your username.");
+                } else if (newCount >= 3) {
+                    setIsLocked(true);
+                    setError('Your account has been locked due to multiple failed username attempts.');
                 }
-                console.log("Username check error:", err);
+                // setError("Something went wrong. Please try again.");
+                console.error("Username check error:", err);
             } finally {
                 setLoading(false);
             }
@@ -133,21 +131,21 @@ const LoginPage = () => {
                     setPasswordAttemptCount(0);
                     setInputValue('');
                     setTimeout(() => inputsRef.current[0]?.focus(), 0);
-                } else {
-                    const newPassAttempts = passwordAttemptCount + 1;
-                    setPasswordAttemptCount(newPassAttempts);
-
-                    if (newPassAttempts === 1) {
-                        setError('The password you entered is incorrect. Please try again.');
-                    } else if (newPassAttempts === 2) {
-                        setError('Still incorrect. Please double-check your password.');
-                    } else if (newPassAttempts >= 3) {
-                        setIsLocked(true);
-                        setError('Your account has been locked due to multiple failed password attempts.');
-                    }
                 }
             } catch {
-                setError('Invalid credentials.');
+
+                const newPassAttempts = passwordAttemptCount + 1;
+                setPasswordAttemptCount(newPassAttempts);
+
+                if (newPassAttempts === 1) {
+                    setError('The password you entered is incorrect. Please try again.');
+                } else if (newPassAttempts === 2) {
+                    setError('Still incorrect. Please double-check your password.');
+                } else if (newPassAttempts >= 3) {
+                    setIsLocked(true);
+                    setError('Your account has been locked due to multiple failed password attempts.');
+                }
+
             } finally {
                 setLoading(false);
             }
@@ -195,7 +193,7 @@ const LoginPage = () => {
                 const data = await validateOTP({
                     method: 'email',
                     otp: (enteredOtp),
-                    username: "hemsmey59@gmail.com",
+                    username: username,
                 });
 
                 if (!data.success) {
@@ -270,6 +268,7 @@ const LoginPage = () => {
             {showToast && (
                 <ToasterMessage type={toastType}/>
             )}
+
             <div className="scl--login-page">
                 <img src={BackgroundImage} alt=""/>
                 <div className="scl--login-form">
@@ -337,7 +336,7 @@ const LoginPage = () => {
                                             <div
                                                 className={`scl--login-verify-boxes ${
                                                     (error || isLocked ? "scl--login-verify-boxes-error-border" : "") +
-                                                    (isLocked ? " scl--locked" : "")
+                                                    (isLocked ? "scl--locked" : "")
                                                 }`}>
                                                 {[...Array(6)].map((_, index) => (
                                                     <input
@@ -413,9 +412,9 @@ const LoginPage = () => {
                                                 <button
                                                     type="submit"
                                                     className={
-                                                        step === "username"
-                                                            ? "scl--btn-active"
-                                                            : ""
+                                                        `${step === "username" && inputValue.length >= 4 ? "scl--btn-active" : ""}
+                                                         ${step === "password" && inputValue.length >= 4 ? "scl--btn-active" : ""}
+                                                        `
                                                     }
                                                 >
                                                     <svg width="37" height="31" viewBox="0 0 37 31" fill="none"
