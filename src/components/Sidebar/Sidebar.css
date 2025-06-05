@@ -1,0 +1,46 @@
+.scl--sidebar-container{
+    width: 20%;
+    height: 100%;
+}
+
+.scl--sidebar-co-container{
+    width: 260px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.scl--sidebar-logo{
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.scl--sidebar-logo img{
+    width: 128px;
+    height: 33px;
+    object-fit: contain;
+}
+
+.scl--sidebar-menu{
+    width: 100%;
+    height: 720px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 1);
+    padding: 15px 10px 10px 10px;
+}
+
+scl--sidebar-overview{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

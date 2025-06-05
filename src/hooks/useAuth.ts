@@ -1,21 +1,21 @@
 import {useState} from 'react';
 import {verifyUsername, verifyPassword} from '../api/accessAccount';
-import type {VerifyUsernameResponse, LoginResponse} from '../types/accessAccount.ts';
+import type {VerifyUsernameResponse, VerifyPasswordResponse} from '../types/accessAccount.ts';
 
 export const useAuth = () => {
     const [username, setUsername] = useState('');
 
     const checkUsername = async (inputUsername: string): Promise<VerifyUsernameResponse> => {
-        const res = await verifyUsername(inputUsername.trim());
+        const res = await verifyUsername(inputUsername);
         if (res.success) {
-            setUsername(inputUsername.trim());
+            setUsername(inputUsername);
         }
         return res;
     };
 
-    const checkPassword = async (password: string): Promise<LoginResponse> => {
-        const res = await verifyPassword({username, password});
-        return res;
+    const checkPassword = async (password: string): Promise<VerifyPasswordResponse> => {
+        const data = await verifyPassword({username, password});
+        return data;
     };
 
     return {

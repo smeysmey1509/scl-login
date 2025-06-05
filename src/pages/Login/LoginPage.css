@@ -67,7 +67,6 @@
     width: 64px;
     height: 60px;
     object-fit: contain;
-    margin-top: 7px;
 }
 
 .scl--login-form-logo p {
@@ -76,8 +75,7 @@
     color: #ffffff;
     opacity: 0.8;
     font-weight: 400;
-    magin-top: 27px
-
+    margin-top: 7px
 }
 
 /* Login Form Field */
@@ -237,7 +235,7 @@
     cursor: pointer;
 }
 
-.scl--locked {
+.scl--locked{
     pointer-events: none;
     opacity: 0.6;
     filter: grayscale(50%);

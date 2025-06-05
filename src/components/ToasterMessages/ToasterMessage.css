@@ -122,7 +122,6 @@
 .scl--login-confirm-newdevice{
     width: 30%;
     height: 100%;
-    margin-right: 10px;
     display: flex;
     flex-direction: column;
     justify-content: center;

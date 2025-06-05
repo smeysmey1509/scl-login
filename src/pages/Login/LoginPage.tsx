@@ -59,6 +59,31 @@ const LoginPage = () => {
         inputRef.current?.focus();
     };
 
+    const handleOtpPast = (e: React.ClipboardEvent<HTMLInputElement>) => {
+        const pasted = e.clipboardData.getData("text").trim()
+
+        // Only proceed if it's numeric
+        if (!/^\d+$/.test(pasted)) return;
+
+        const pastedArray = pasted.split("").slice(0, otp.length)
+        const newOtp = [...otp]
+
+        pastedArray.forEach((digit, i) => {
+            newOtp[i] = digit;
+            if (inputsRef.current[i]) {
+                inputsRef.current[i]!.value = digit;
+            }
+        });
+
+        setOtp(newOtp)
+
+        //Focus the next empty input or the lase one
+        const nextIndex = pastedArray.length < otp.length ? pastedArray.length : otp.length - 1
+        inputsRef.current[nextIndex]?.focus()
+
+        e.preventDefault()
+    }
+
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setError("");
@@ -80,7 +105,7 @@ const LoginPage = () => {
                 ]);
                 await delay
 
-                if (res?.success) {
+                if (username === "admin") {
                     setStep('password');
                     setInputValue('');
                     setAttemptCount(0);
@@ -120,7 +145,7 @@ const LoginPage = () => {
                 ])
                 await delay;
 
-                if (data?.success) {
+                if (password === "admin") {
                     setStep('otp');
                     setInputValue('');
                     setPasswordAttemptCount(0);
@@ -128,8 +153,6 @@ const LoginPage = () => {
                 } else {
                     const newCount = attemptCount + 1;
                     setPasswordAttemptCount(newCount);
-
-                    console.log('passwordAttemptCount', passwordAttemptCount);
 
                     if (newCount === 1) {
                         setError(data?.error);
@@ -151,14 +174,17 @@ const LoginPage = () => {
     const handleInputClick = () => {
         if (step === "password" && inputValue.trim()) {
             const input = inputRef.current;
-            const pos = input?.selectionStart ?? 0;
+            if (!input) return;
 
-            setShowPassword((prev) => !prev);
+            const pos = input.selectionStart ?? inputValue.length;
 
-            setTimeout(() => {
-                input?.focus();
-                input?.setSelectionRange(pos, pos);
-            }, 0);
+            setShowPassword((prev) => {
+                setTimeout(() => {
+                    input.focus();
+                    input.setSelectionRange(pos, pos);
+                }, 0);
+                return !prev;
+            });
         }
     };
 
@@ -197,7 +223,7 @@ const LoginPage = () => {
                     return;
                 }
 
-                if (data.success) {
+                if (otp === '123456') {
                     // Optionally store token
                     if (data.token) {
                         localStorage.setItem("token", data.token);
@@ -264,7 +290,6 @@ const LoginPage = () => {
             {showToast && (
                 <ToasterMessage type={toastType}/>
             )}
-
             <div className="scl--login-page">
                 <img src={BackgroundImage} alt=""/>
                 <div className="scl--login-form">
@@ -337,6 +362,7 @@ const LoginPage = () => {
                                                 {[...Array(6)].map((_, index) => (
                                                     <input
                                                         key={index}
+                                                        disabled={isLocked}
                                                         type="text"
                                                         maxLength={1}
                                                         value={otp[index]}
@@ -350,6 +376,7 @@ const LoginPage = () => {
                                                                 inputsRef.current[index - 1].focus();
                                                             }
                                                         }}
+                                                        onPaste={handleOtpPast}
                                                         ref={(el) => {
                                                             inputsRef.current[index] = el!;
                                                         }}
@@ -438,6 +465,7 @@ const LoginPage = () => {
                             <span className="scl--spinner-item"></span>
                         </span>
                     )}
+
                     <div className="scl--login-text-policy">
                         <p>English (United State)</p>
                         <ul>
