@@ -8,7 +8,11 @@ export interface VerifyUsernameResponse {
     };
 }
 
-export interface LoginResponse {
-    token: string;
-    // add other fields if any
+export interface VerifyPasswordResponse {
+    success: boolean;
+    requestId: string;
+    data: {
+        message: string;
+        step: string;
+    };
 }

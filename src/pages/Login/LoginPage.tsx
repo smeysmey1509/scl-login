@@ -10,7 +10,7 @@ import {validateOTP} from "../../api/otpAuth.ts";
 import {useNavigate} from "react-router";
 
 const LoginPage = () => {
-    const {checkUsername, loginUser} = useAuth();
+    const {checkUsername, checkPassword} = useAuth();
     const [step, setStep] = useState<"username" | "password" | "otp">("username");
     const [inputValue, setInputValue] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
@@ -74,32 +74,34 @@ const LoginPage = () => {
             setLoading(true);
 
             try {
-
                 const [res] = await Promise.all([
                     checkUsername(inputValue.trim()),
-                    new Promise(resolve => setTimeout(resolve, 3000))
+                    new Promise(resolve => setTimeout(resolve, 3000)) // ⏳ loading delay
                 ]);
-                await delay;
+                await delay
 
                 if (res?.success) {
                     setStep('password');
                     setInputValue('');
                     setAttemptCount(0);
+                } else {
+
+                    const newCount = attemptCount + 1;
+                    setAttemptCount(newCount);
+
+                    if (newCount === 1) {
+                        setError(res?.error);
+                    } else if (newCount === 2) {
+                        setError(res?.error);
+                    } else if (newCount >= 3) {
+                        setIsLocked(true);
+                        setError(res?.error);
+                    }
                 }
+
             } catch (err) {
-                await delay;
-
-                const newCount = attemptCount + 1;
-                setAttemptCount(newCount);
-
-                if (newCount === 1) {
-                    setError("The username you entered doesn't match. Please check your username again.");
-                } else if (newCount === 2) {
-                    setError("Still incorrect. Please check and make sure that your username.");
-                } else if (newCount >= 3) {
-                    setIsLocked(true);
-                    setError('Your account has been locked due to multiple failed username attempts.');
-                }
+                // Only runs on network or unexpected errors
+                setError("Unexpected error occurred. Please try again.");
             } finally {
                 setLoading(false);
             }
@@ -108,42 +110,38 @@ const LoginPage = () => {
                 setError("Password is required.");
                 return;
             }
+
             setLoading(true);
+
             try {
                 const [data] = await Promise.all([
-                    loginUser(inputValue.trim()),
+                    checkPassword(inputValue.trim()),
                     new Promise(resolve => setTimeout(resolve, 3000))
                 ])
                 await delay;
 
-                if (data?.error) {
-                    setShowToast(true);
-                    setToastType('no-connection');
-                    setError("Connection timed out. Please try again.");
-                    return;
-                }
-
                 if (data?.success) {
                     setStep('otp');
-                    setPasswordAttemptCount(0);
                     setInputValue('');
-                    setTimeout(() => inputsRef.current[0]?.focus(), 0);
+                    setPasswordAttemptCount(0);
+                    focus()
+                } else {
+                    const newCount = attemptCount + 1;
+                    setPasswordAttemptCount(newCount);
+
+                    console.log('passwordAttemptCount', passwordAttemptCount);
+
+                    if (newCount === 1) {
+                        setError(data?.error);
+                    } else if (newCount === 2) {
+                        setError(data?.error);
+                    } else if (newCount >= 3) {
+                        setIsLocked(true);
+                        setError(data?.error);
+                    }
                 }
-            } catch {
-                await delay;
-
-                const newPassAttempts = passwordAttemptCount + 1;
-                setPasswordAttemptCount(newPassAttempts);
-
-                if (newPassAttempts === 1) {
-                    setError('The password you entered is incorrect. Please try again.');
-                } else if (newPassAttempts === 2) {
-                    setError('Still incorrect. Please double-check your password.');
-                } else if (newPassAttempts >= 3) {
-                    setIsLocked(true);
-                    setError('Your account has been locked due to multiple failed password attempts.');
-                }
-
+            } catch (err) {
+                setError("Unexpected error occurred. Please try again.");
             } finally {
                 setLoading(false);
             }
@@ -201,14 +199,14 @@ const LoginPage = () => {
 
                 if (data.success) {
                     // Optionally store token
-                    // if (data.token) {
-                    //     localStorage.setItem("token", data.token);
-                    // }
+                    if (data.token) {
+                        localStorage.setItem("token", data.token);
+                    }
 
                     setShowToast(true);
                     setToastType('success');
                     setError("");
-                    // navigate("/dashboard");
+                    
                 } else {
                     const newOtpAttempts = otpCount + 1;
                     setOtpCount(newOtpAttempts);

@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import {verifyUsername, login} from '../api/accessAccount';
+import {verifyUsername, verifyPassword} from '../api/accessAccount';
 import type {VerifyUsernameResponse, LoginResponse} from '../types/accessAccount.ts';
 
 export const useAuth = () => {
@@ -13,14 +13,13 @@ export const useAuth = () => {
         return res;
     };
 
-    const loginUser = async (password: string): Promise<LoginResponse> => {
-        const data = await login({username, password});
-        localStorage.setItem('token', data.token);
-        return data;
+    const checkPassword = async (password: string): Promise<LoginResponse> => {
+        const res = await verifyPassword({username, password});
+        return res;
     };
 
     return {
         checkUsername,
-        loginUser,
+        checkPassword,
     };
 };
