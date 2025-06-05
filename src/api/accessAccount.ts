@@ -7,6 +7,6 @@ export const verifyUsername = async (username: string): Promise<VerifyUsernameRe
 };
 
 export const login = async (data: { username: string; password: string }): Promise<LoginResponse> => {
-    const response = await axios.post<LoginResponse>('/auth/login', data);
+    const response = await axios.post<LoginResponse>('/auth/verify-password', data);
     return response.data;
 };

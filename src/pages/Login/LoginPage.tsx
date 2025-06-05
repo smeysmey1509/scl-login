@@ -63,15 +63,7 @@ const LoginPage = () => {
         event.preventDefault();
         setError("");
 
-        // ⏳ Wait 5 seconds before checking username
-        await new Promise((resolve) => setTimeout(resolve, 0));
-
-        // ⏱ Timeout after 5 more seconds if server doesn't respond
-        const timeoutPromise = new Promise<{ success: false; error: string }>((resolve) => {
-            setTimeout(() => {
-                resolve({success: false, error: "timeout"});
-            }, 10);
-        });
+        const delay = new Promise(resolve => setTimeout(resolve, 3000));
 
         if (step === "username") {
             if (!inputValue.trim() || isLocked) {
@@ -82,25 +74,21 @@ const LoginPage = () => {
             setLoading(true);
 
             try {
-                const res = await Promise.race([
-                    checkUsername(inputValue.trim()),
-                    timeoutPromise,
-                ]);
 
-                if (res?.error === 'timeout') {
-                    setShowToast(true);
-                    setToastType('no-connection');
-                    setError("Connection timed out. Please try again.");
-                    return;
-                }
+                const [res] = await Promise.all([
+                    checkUsername(inputValue.trim()),
+                    new Promise(resolve => setTimeout(resolve, 3000))
+                ]);
+                await delay;
 
                 if (res?.success) {
                     setStep('password');
                     setInputValue('');
                     setAttemptCount(0);
                 }
-
             } catch (err) {
+                await delay;
+
                 const newCount = attemptCount + 1;
                 setAttemptCount(newCount);
 
@@ -122,12 +110,13 @@ const LoginPage = () => {
             }
             setLoading(true);
             try {
-                const data = await Promise.race([
+                const [data] = await Promise.all([
                     loginUser(inputValue.trim()),
-                    timeoutPromise
+                    new Promise(resolve => setTimeout(resolve, 3000))
                 ])
+                await delay;
 
-                if(data?.error){
+                if (data?.error) {
                     setShowToast(true);
                     setToastType('no-connection');
                     setError("Connection timed out. Please try again.");
@@ -141,6 +130,7 @@ const LoginPage = () => {
                     setTimeout(() => inputsRef.current[0]?.focus(), 0);
                 }
             } catch {
+                await delay;
 
                 const newPassAttempts = passwordAttemptCount + 1;
                 setPasswordAttemptCount(newPassAttempts);
@@ -283,9 +273,9 @@ const LoginPage = () => {
                     <div className="scl--login-form-background">
                         <div className="scl--login-form-logo">
                             <img src={SCLLogo} alt=""/>
-                            {step === "username" ? (
+                            {step === "username" || step === 'otp' ? (
                                 <p>
-                                    With your username to continue. This account will be available
+                                    {step === "otp" ? "Your password was verify. We’ve send verification code to your authentication app. " : "With your username to continue. This account will be available"}
                                     to other Sodexs applications.
                                 </p>
                             ) : (
@@ -368,7 +358,8 @@ const LoginPage = () => {
                                                     />
                                                 ))}
                                             </div>
-                                            {step === "otp" && <span className="scl--otp-error">{error}</span>}
+                                            <span
+                                                className={`scl--otp-error ${error && step !== "otp" ? "visible" : ""}`}>{error}</span>
                                             <div className="scl--login-verify-resend-code">
                                                 <span onClick={handleResetCode} style={{
                                                     cursor: timer === 0 ? "" : "not-allowed",
@@ -437,8 +428,10 @@ const LoginPage = () => {
                                         </div>
                                     )}
                                 </form>
-                                <span className={`scl--login-error ${error ? "visible" : ""}`}>{error}</span>
-                                {/*{step !== "otp" && error && <span className={`scl--login-error ${error ? "visible" : ""}`}>{error}</span>}*/}
+                                {
+                                    step !== 'otp' && <span
+                                        className={`scl--login-error ${error && step !== "otp" ? "visible" : ""}`}>{error}</span>
+                                }
                             </div>
                         </div>
                     </div>

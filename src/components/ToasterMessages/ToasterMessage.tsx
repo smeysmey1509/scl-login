@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import {useEffect, useState, ReactNode} from "react";
 import "./ToasterMessage.css";
 
 type ToastType = "success" | "no-connection" | "unsuccess" | "new-device";
@@ -31,13 +31,13 @@ const toastMessages: ToastData[] = [
         svg: (
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
                  xmlns="http://www.w3.org/2000/svg">
-                <circle cx="10" cy="10" r="10" fill="#F05C42" />
+                <circle cx="10" cy="10" r="10" fill="#F05C42"/>
                 <path d="M13.25 8.9996C11.3662 7.33347 8.75 7.33347 6.75 8.9996" stroke="#242C32" strokeLinecap="round"
-                      strokeLinejoin="round" />
+                      strokeLinejoin="round"/>
                 <path d="M5 7.49936C8.15789 4.83356 11.8421 4.83355 15 7.49931" stroke="#242C32" strokeLinecap="round"
-                      strokeLinejoin="round" />
+                      strokeLinejoin="round"/>
                 <path d="M9.99643 11.4893V12.2449M9.99643 13.2303V13.2458" stroke="#242C32" strokeLinecap="round"
-                      strokeLinejoin="round" />
+                      strokeLinejoin="round"/>
             </svg>
         ),
         type: "no-connection",
@@ -62,8 +62,8 @@ const toastMessages: ToastData[] = [
         svg: (
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
                  xmlns="http://www.w3.org/2000/svg">
-                <circle cx="10" cy="10" r="10" fill="#0562BB" />
-                <path d="..." fill="#242C32" />
+                <circle cx="10" cy="10" r="10" fill="#0562BB"/>
+                <path d="..." fill="#242C32"/>
             </svg>
         ),
         type: "new-device",
@@ -74,7 +74,7 @@ interface ToasterMessageProps {
     type: ToastType;
 }
 
-const ToasterMessage = ({ type }: ToasterMessageProps) => {
+const ToasterMessage = ({type}: ToasterMessageProps) => {
     const toast = toastMessages.find((t) => t.type === type);
     const [animateOut, setAnimateOut] = useState(false);
 
@@ -106,12 +106,12 @@ const ToasterMessage = ({ type }: ToasterMessageProps) => {
                 {toast.type === "new-device" && (
                     <div className="scl--login-confirm-newdevice">
                         <p>That was me</p>
-                        <span />
+                        <span/>
                         <p>That wasn't me</p>
                     </div>
                 )}
             </div>
-            <div className={`scl--login-toast-bar toast--${toast.type}`} />
+            <div className={`scl--login-toast-bar toast--${toast.type}`}/>
         </div>
     );
 };
