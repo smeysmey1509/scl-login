@@ -13,6 +13,7 @@ export interface VerifyPasswordResponse {
     requestId: string;
     data: {
         message: string;
-        step: string;
+        refresh_token: string;
+        access_token: string;
     };
 }

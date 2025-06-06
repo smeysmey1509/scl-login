@@ -30,6 +30,7 @@ const LoginPage = () => {
     const [intervalId, setIntervalId] = useState<number | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const inputsRef = useRef<HTMLInputElement[]>([]);
+    const [isPasswordInvalid, setIsPasswordInvalid] = useState<boolean>(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -45,12 +46,16 @@ const LoginPage = () => {
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setInputValue(e.target.value);
         if (step == "username") setUsername(e.target.value);
-        if (step == "password") setPassword(e.target.value);
+        if (step == "password") {
+            setPassword(e.target.value);
+            setIsPasswordInvalid(false);
+        }
     };
 
     const handleCopy = () => {
         navigator.clipboard.writeText(inputValue).then(() => {
-            setIsCopy(!isCopy);
+            setIsCopy(true);
+            setTimeout(() => setIsCopy(false), 500); // Revert after 1.5 seconds
         });
     };
 
@@ -60,10 +65,11 @@ const LoginPage = () => {
     };
 
     const handleOtpPast = (e: React.ClipboardEvent<HTMLInputElement>) => {
+        e.preventDefault()
         const pasted = e.clipboardData.getData("text").trim()
 
         // Only proceed if it's numeric
-        if (!/^\d+$/.test(pasted)) return;
+        if (!/^\d{6}$/.test(pasted)) return;
 
         const pastedArray = pasted.split("").slice(0, otp.length)
         const newOtp = [...otp]
@@ -81,14 +87,11 @@ const LoginPage = () => {
         const nextIndex = pastedArray.length < otp.length ? pastedArray.length : otp.length - 1
         inputsRef.current[nextIndex]?.focus()
 
-        e.preventDefault()
     }
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setError("");
-
-        const delay = new Promise(resolve => setTimeout(resolve, 3000));
 
         if (step === "username") {
             if (!inputValue.trim() || isLocked) {
@@ -101,11 +104,11 @@ const LoginPage = () => {
             try {
                 const [res] = await Promise.all([
                     checkUsername(inputValue.trim()),
-                    new Promise(resolve => setTimeout(resolve, 3000)) // ⏳ loading delay
+                    new Promise(resolve => setTimeout(resolve, 3000))
                 ]);
-                await delay
+                // await delay
 
-                if (username === "admin") {
+                if (res?.success) {
                     setStep('password');
                     setInputValue('');
                     setAttemptCount(0);
@@ -120,7 +123,7 @@ const LoginPage = () => {
                         setError(res?.error);
                     } else if (newCount >= 3) {
                         setIsLocked(true);
-                        setError(res?.error);
+                        // setError(res?.error);
                     }
                 }
 
@@ -143,24 +146,25 @@ const LoginPage = () => {
                     checkPassword(inputValue.trim()),
                     new Promise(resolve => setTimeout(resolve, 3000))
                 ])
-                await delay;
 
-                if (password === "admin") {
+                if (data?.success) {
                     setStep('otp');
                     setInputValue('');
                     setPasswordAttemptCount(0);
                     focus()
                 } else {
-                    const newCount = attemptCount + 1;
+                    const newCount = passwordAttemptCount + 1;
                     setPasswordAttemptCount(newCount);
 
                     if (newCount === 1) {
                         setError(data?.error);
+                        setIsPasswordInvalid(true)
                     } else if (newCount === 2) {
                         setError(data?.error);
+                        setIsPasswordInvalid(true)
                     } else if (newCount >= 3) {
                         setIsLocked(true);
-                        setError(data?.error);
+                        // setError(data?.error);
                     }
                 }
             } catch (err) {
@@ -205,50 +209,58 @@ const LoginPage = () => {
         const enteredOtp = updatedOtp.join("").trim();
 
         if (enteredOtp.length === 6) {
+
             if (!/^\d{6}$/.test(enteredOtp)) {
                 setError("Please enter a valid 6-digit OTP.");
                 setShowToast(true);
                 return;
             }
 
-            try {
-                const data = await validateOTP({
-                    method: 'email',
-                    otp: (enteredOtp),
-                    username: username,
-                });
+            setLoading(true);
 
-                if (!data.success) {
+            try {
+                const [data] = await Promise.all([
+                    validateOTP({
+                        method: 'email',
+                        otp: enteredOtp,
+                        username: username,
+                    }),
+                    new Promise(resolve => setTimeout(resolve, 3000))
+                ])
+
+                if (data.error) {
+                    setShowToast(true);
+                    setToastType('no-connection')
                     setError(data.errorMessage || "OTP verification failed.");
                     return;
                 }
 
-                if (otp === '123456') {
-                    // Optionally store token
-                    if (data.token) {
-                        localStorage.setItem("token", data.token);
-                    }
+                if (data?.success) {
+                    const accessToken = data.data.access_token;
+
+                    localStorage.setItem("access_token", accessToken);
 
                     setShowToast(true);
                     setToastType('success');
                     setError("");
-                    
+
                 } else {
                     const newOtpAttempts = otpCount + 1;
                     setOtpCount(newOtpAttempts);
 
                     if (newOtpAttempts === 1) {
-                        setError("Your verification code is incorrect. Please check and try again.");
+                        setError(data?.error);
                     } else if (newOtpAttempts === 2) {
-                        setError("Still incorrect. Please double-check your code.");
+                        setError(data?.error);
                     } else if (newOtpAttempts >= 3) {
-                        setError("You’ve entered the wrong OTP 3 times. You're now locked out.");
                         setIsLocked(true);
                     }
                 }
             } catch (error) {
                 console.error("OTP validation failed:", error);
                 setError("Failed to verify OTP. Please try again.");
+            } finally {
+                setLoading(false);
             }
         }
     };
@@ -399,7 +411,7 @@ const LoginPage = () => {
                                         <div
                                             className={`scl--login-full-form ${
                                                 (error || isLocked ? "scl--login-error-border" : "") +
-                                                (isLocked ? " scl--locked" : "")
+                                                (isLocked ? " scl--locked" : "") + (step === "password" && isPasswordInvalid ? " scl--lock-button" : "")
                                             }`}
                                         >
                                             <input
@@ -455,7 +467,7 @@ const LoginPage = () => {
                                 </form>
                                 {
                                     step !== 'otp' && <span
-                                        className={`scl--login-error ${error && step !== "otp" ? "visible" : ""}`}>{error}</span>
+                                        className={`scl--login-error ${error ? "visible" : ""}`}>{error}</span>
                                 }
                             </div>
                         </div>

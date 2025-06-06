@@ -3,7 +3,7 @@ import type {VerifyUsernameResponse, VerifyPasswordResponse} from '../types/acce
 
 export const verifyUsername = async (username: string): Promise<VerifyUsernameResponse> => {
     try {
-        const response = await instance.post<VerifyUsernameResponse>('/auth/verify-username', {username});
+        const response = await instance?.post<VerifyUsernameResponse>('/auth/verify-username', {username});
         return response.data;
     } catch (error: any) {
         if (error.response) {
@@ -23,7 +23,7 @@ export const verifyUsername = async (username: string): Promise<VerifyUsernameRe
 
 export const verifyPassword = async (data: { username: string; password: string }): Promise<VerifyPasswordResponse> => {
     try {
-        const response = await instance.post<VerifyPasswordResponse>('/auth/verify-password', data);
+        const response = await instance?.post<VerifyPasswordResponse>('/auth/verify-password', data);
         return response.data;
     } catch (error: any) {
         if (error.response) {

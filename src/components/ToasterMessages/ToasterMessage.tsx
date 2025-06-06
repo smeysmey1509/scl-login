@@ -71,7 +71,7 @@ const toastMessages: ToastData[] = [
 ];
 
 interface ToasterMessageProps {
-    type: ToastType;
+    type?: ToastType;
 }
 
 const ToasterMessage = ({type}: ToasterMessageProps) => {

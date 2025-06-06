@@ -1,18 +1,31 @@
 import axios from './axios';
-
-export interface ValidateOTPRequest {
-    method: string;
-    otp: string;
-    username: string;
-}
+import instance from "./axios";
 
 export interface ValidateOTPResponse {
-    token: string;
     success: boolean;
-    message?: string;
+    requestId: string;
+    data: {
+        message: string;
+        refresh_token: string;
+        access_token: string;
+    };
 }
 
-export const validateOTP = async (payload: ValidateOTPRequest): Promise<ValidateOTPResponse> => {
-    const response = await axios?.post("/auth/topt/validate", payload);
-    return response?.data;
+export const validateOTP = async (payload: ValidateOTPResponse): Promise<ValidateOTPResponse> => {
+    try {
+        const response = await instance?.post("/auth/topt/validate", payload);
+        return response?.data;
+    } catch (error: any) {
+        if (error?.response) {
+            return error.response.data as ValidateOTPResponse
+        }
+        // Fallback for network/server errors
+        return {
+            success: false,
+            error: 'Network error. Please try again.',
+            errorMessage: 'Unexpected error',
+            requestId: '',
+        };
+    }
+
 };

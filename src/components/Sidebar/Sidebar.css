@@ -1,9 +1,9 @@
-.scl--sidebar-container{
+.scl--sidebar-container {
     width: 20%;
     height: 100%;
 }
 
-.scl--sidebar-co-container{
+.scl--sidebar-co-container {
     width: 260px;
     height: 100%;
     display: flex;
@@ -13,7 +13,7 @@
     gap: 2rem;
 }
 
-.scl--sidebar-logo{
+.scl--sidebar-logo {
     width: 100%;
     height: 100%;
     background: transparent;
@@ -23,24 +23,116 @@
 
 }
 
-.scl--sidebar-logo img{
+.scl--sidebar-logo img {
     width: 128px;
     height: 33px;
     object-fit: contain;
 }
 
-.scl--sidebar-menu{
+.scl--sidebar-menu {
     width: 100%;
     height: 720px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
     border-radius: 8px;
     background: rgba(255, 255, 255, 1);
     padding: 15px 10px 10px 10px;
+    box-shadow: 2px 2px 10px 0px rgba(0, 0, 0, 0.1);
 }
 
-scl--sidebar-overview{
+.scl--sidebar-overview {
     width: 100%;
-    height: 100%;
+    height: fit-content;
     display: flex;
+    flex-direction: column;
     justify-content: center;
+    gap: 8px;
+    border-bottom: 1px solid rgba(233, 236, 239, 1);
+}
+
+.scl--sidebar-overview span {
+    font-family: "Inter", sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 175%;
+    letter-spacing: 0;
+    color: #ADB5BD;
+}
+
+.scl--sidebar-overview-box {
+    width: 100%;
+    height: 44px;
+    display: flex;
     align-items: center;
+    border-radius: 4px;
+    background: rgba(43, 115, 255, 1);
+    padding-left: 24px;
+    gap: 1rem;
+}
+
+.scl--sidebar-overview-box button {
+    font-family: "Inter", sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 175%;
+    letter-spacing: 0;
+    background: transparent;
+    border: none;
+    color: #ffffff;
+}
+
+/*.scl--sidebar-sidebar-bar {*/
+/*    width: 100%;*/
+/*    height: 1px;*/
+/*    display: flex;*/
+/*}*/
+
+.scl--sidebar-modules {
+    width: 100%;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    /*align-items: center;*/
+    justify-content: center;
+    gap: 12px
+}
+
+.scl--sidebar-modules span {
+    font-family: "Inter", sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 175%;
+    letter-spacing: 0;
+    color: #ADB5BD;
+}
+
+.scl--sidebar-modules ul {
+    text-decoration: none;
+}
+
+.scl--sidebar-modules ul li {
+    list-style: none;
+    padding: 8px 10px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.scl--sidebar-modules ul li svg {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+}
+
+.scl--sidebar-modules ul li a {
+    font-family: "Inter", sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 175%;
+    letter-spacing: 0;
+    color: rgba(138, 146, 166, 1);;
 }
