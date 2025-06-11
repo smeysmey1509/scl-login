@@ -81,10 +81,18 @@ const LoginPage = () => {
     };
 
     const handleCopy = () => {
-        navigator.clipboard.writeText(inputValue).then(() => {
-            setIsCopy(true);
-            setTimeout(() => setIsCopy(false), 500); // Revert after 1.5 seconds
-        });
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(inputValue)
+                .then(() => {
+                    setIsCopy(true);
+                    setTimeout(() => setIsCopy(false), 1000);
+                })
+                .catch(err => {
+                    console.error("Copy failed:", err);
+                });
+        } else {
+            console.error("Clipboard API not supported.");
+        }
     };
 
     const handleRetype = () => {
@@ -422,7 +430,7 @@ const LoginPage = () => {
         return `${minutes}:${secs}`;
     };
 
-    console.log('copy:', isCopy)
+    console.log('isCopy', isCopy)
 
     return (
         <>
@@ -555,7 +563,8 @@ const LoginPage = () => {
                                             className={`scl--login-full-form ${
                                                 (error || isLocked ? "scl--login-error-border" : "") +
                                                 (isLocked ? " scl--locked" : "") + (step === "password" && isPasswordInvalid ? " scl--lock-button" : "") +
-                                                (step === "username" && inputValue.length >= 2 ? "scl--login-full-border" : "")
+                                                (step === "username" && inputValue.length >= 2 ? "scl--login-full-border" : "") +
+                                                (step === "password" && inputValue.length >= 2 ? "scl--login-full-border" : "")
                                             }`}
                                         >
                                             <input
@@ -578,7 +587,7 @@ const LoginPage = () => {
                                                     className="scl--login-fn"
                                                 >
                                                     <div className="scl--login-copy" onClick={handleCopy}>
-                                                        {!isCopy ? <span>Copied</span> : <MdContentCopy/>}
+                                                        {isCopy ? <span>Copied</span> : <MdContentCopy/>}
                                                     </div>
                                                     <div
                                                         className="scl--login-retype"
@@ -609,10 +618,6 @@ const LoginPage = () => {
                                         </div>
                                     )}
                                 </form>
-                                {/*{*/}
-                                {/*    step !== 'otp' && (<span*/}
-                                {/*        className={`scl--login-error ${step !== 'otp' && error ? "visible" : ""}`}>{error}</span>)*/}
-                                {/*}*/}
                                 {
                                     step !== 'otp' && (<span
                                         className={`scl--login-error ${error ? "visible" : ""}`}>{error}</span>)
