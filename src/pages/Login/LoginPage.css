@@ -49,6 +49,10 @@
     position: relative;
 }
 
+.scl--login-page .scl--login-form .scl--login-form-background-otp {
+    height: 293px;
+}
+
 .scl--login-form-background p {
     /* position: absolute; */
 }
@@ -71,11 +75,10 @@
 
 .scl--login-form-logo p {
     font-size: 14px;
-    line-height: 2;
-    color: #ffffff;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.8);
     opacity: 0.8;
     font-weight: 400;
-    margin-top: 7px
 }
 
 /* Login Form Field */
@@ -87,7 +90,11 @@
     flex-direction: column;
     justify-content: center;
     padding-right: 45px;
-    gap: 37px;
+    /*gap: 27px;*/
+}
+
+.scl--login-form-field-otp {
+    /*margin-top: 17px;*/
 }
 
 .scl--login-form-field-title h2 {
@@ -105,21 +112,28 @@
 }
 
 .scl--login-form-field-title {
+    width: 100%;
+    height: 50%;
     display: flex;
     flex-direction: column;
     justify-content: center;
     gap: 8px;
 }
 
-.scl--login-form-field-input {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    width: 100%;
+.scl--login-form-field-otp-title-width {
+    /*height: 30%;*/
 }
 
-.scl--login-form-field-input .scl--login-error {
-    visibility: hidden;
+.scl--login-form-field-input {
+    width: 100%;
+    height: 50%;
+    display: flex;
+    flex-direction: column;
+    /*justify-content: center;*/
+}
+
+.scl--login-error {
+    visibility: visible;
     margin-top: 18px;
     font-family: "Inter", sans-serif;
     font-weight: 400;
@@ -181,10 +195,10 @@
     background: #a49d9d;
 }
 
+
 .scl--locked button {
     background: linear-gradient(0deg, rgba(164, 157, 157, 0.1), rgba(164, 157, 157, 0.1)),
     linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)) !important;
-
 }
 
 .scl--btn-active {
@@ -195,6 +209,10 @@
 
 .scl--btn-active:hover {
     background-color: #180bd0 !important;
+}
+
+.scl--login-full-border {
+    border: 2px solid rgba(94, 164, 230, 1);
 }
 
 /* Shared styles for both text and password input types */
@@ -228,13 +246,15 @@
 .scl--login-full-form button {
     height: 100%;
     padding: 10px 18px 10px 18px;
-    border-radius: 0px 2px 2px 0px;
+    border-radius: 0 2px 2px 0;
     background-color: #282828;
     /*color: #cbc9c9;*/
     text-align: center;
     border: none;
     justify-content: center;
     align-items: center;
+    border-bottom-right-radius: 3px;
+    border-top-right-radius: 3px;
 }
 
 .scl--login-full-form button:hover {
@@ -254,6 +274,14 @@
     order: 0;
     align-self: stretch;
     flex-grow: 0;
+}
+
+.scl--otp-locked input[type="text"] {
+    pointer-events: none;
+    opacity: 0.6;
+    filter: grayscale(50%);
+    background: rgba(255, 255, 255, 0.2);
+
 }
 
 .scl--login-full-form-icon {
@@ -433,6 +461,13 @@
     border-radius: 4px;
 }
 
+.scl--login-text-policy p svg {
+    margin-left: 2px;
+    margin-bottom: 2px;
+    color: rgba(255, 255, 255, 0.6);
+    text-align: center;
+}
+
 .scl--login-text-policy p:hover {
     cursor: pointer;
     background-color: #808080;
@@ -473,7 +508,7 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
 .scl--login-verify-boxes {
@@ -494,10 +529,12 @@
     font-size: 36px;
     font-weight: 400;
     line-height: 100%;
+    animation-timing-function: ease-out;
+    animation-duration: 100ms;
 }
 
 .scl--login-verify-boxes-error-border input[type='text'] {
-    border: 2px solid #FB8E88;
+    border: 2px solid #FB8E88
 }
 
 .scl--login-verify-boxes input[type="text"]:hover {
@@ -527,6 +564,12 @@
     /*justify-content: center;*/
     align-items: center;
     gap: 5px;
+}
+
+.scl--login-verify-resend-code.invisible {
+    visibility: hidden;
+    opacity: 0;
+    transition: 0.3s ease;
 }
 
 .scl--login-verify-resend-code span:nth-child(1) {
@@ -561,9 +604,16 @@
     line-height: 100%;
     letter-spacing: 0;
     color: #fb8e88;
+    opacity: 1;
+    visibility: visible;
 }
 
-/* Loading */
+.scl--otp-error .visible {
+    visibility: hidden;
+    opacity: 0;
+}
+
+/* Loading styles */
 
 .scl--loading-semi-transparent {
     position: fixed;
@@ -571,11 +621,13 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5); /* semi-transparent black */
+    background-color: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
     align-items: flex-start;
     z-index: 1000;
+    cursor: auto;
+    pointer-events: all;
 }
 
 .scl--barloader-container {

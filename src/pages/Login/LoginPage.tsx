@@ -1,4 +1,5 @@
 import React, {type FormEvent, useEffect, useRef, useState,} from "react";
+import {useNavigate, useParams} from "react-router-dom";
 import "./LoginPage.css";
 import BackgroundImage from "../../assets/scl-loginbg.jpg";
 import Profile from "../../assets/profile.jpg";
@@ -6,8 +7,8 @@ import SCLLogo from "../../assets/scl-logo.png";
 import {MdContentCopy, MdVerified} from "react-icons/md";
 import ToasterMessage from "../../components/ToasterMessages/ToasterMessage.tsx";
 import {useAuth} from "../../hooks/useAuth.ts";
-import {validateOTP} from "../../api/otpAuth.ts";
-import {useNavigate} from "react-router";
+import {resentOtp, validateOTP} from "../../api/otpAuth.ts";
+import {isLockStatus} from "../../api/isLocked.ts";
 
 const LoginPage = () => {
     const {checkUsername, checkPassword} = useAuth();
@@ -20,10 +21,14 @@ const LoginPage = () => {
     const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
     const [error, setError] = useState<string>("");
     const [showPassword, setShowPassword] = useState(false);
-    const [attemptCount, setAttemptCount] = useState<number>(0);
+    const [attemptCount, setAttemptCount] = useState(() => {
+        const stored = localStorage.getItem('login_attempt_count');
+        return stored ? parseInt(stored, 10) : 0;
+    });
     const [passwordAttemptCount, setPasswordAttemptCount] = useState<number>(0);
     const [otpCount, setOtpCount] = useState<number>(0);
-    const [isLocked, setIsLocked] = useState<boolean>(false);
+    const [isLocked, setIsLocked] = useState<boolean>();
+    const [otpLocked, setOtpLocked] = useState<boolean>(false);
     const [showToast, setShowToast] = useState<boolean>(false);
     const [toastType, setToastType] = useState<string>('');
     const [timer, setTimer] = useState<number>(0);
@@ -31,8 +36,10 @@ const LoginPage = () => {
     const inputRef = useRef<HTMLInputElement>(null);
     const inputsRef = useRef<HTMLInputElement[]>([]);
     const [isPasswordInvalid, setIsPasswordInvalid] = useState<boolean>(false);
+    // const {step: stepFromUrl} = useParams<{ step?: string }>();
     const navigate = useNavigate();
 
+    //Toaster Message
     useEffect(() => {
         if (showToast) {
             const timer = setTimeout(() => {
@@ -42,6 +49,27 @@ const LoginPage = () => {
             return () => clearTimeout(timer);
         }
     }, [showToast]);
+
+    // Keep URL in sync when `step` changes
+    useEffect(() => {
+        if (step === 'otp') {
+            navigate('/login/otp', {replace: true});
+        } else {
+            navigate('/login', {replace: true});
+        }
+    }, [step, navigate]);
+
+    useEffect(() => {
+        statusCheck()
+        localStorage.getItem("isLocked");
+    }, [isLocked]);
+
+    const statusCheck = async () => {
+        const status = await isLockStatus();
+        if (status.success) {
+            setIsLocked(status.data.isBlocked);
+        }
+    }
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setInputValue(e.target.value);
@@ -63,31 +91,6 @@ const LoginPage = () => {
         setInputValue("");
         inputRef.current?.focus();
     };
-
-    const handleOtpPast = (e: React.ClipboardEvent<HTMLInputElement>) => {
-        e.preventDefault()
-        const pasted = e.clipboardData.getData("text").trim()
-
-        // Only proceed if it's numeric
-        if (!/^\d{6}$/.test(pasted)) return;
-
-        const pastedArray = pasted.split("").slice(0, otp.length)
-        const newOtp = [...otp]
-
-        pastedArray.forEach((digit, i) => {
-            newOtp[i] = digit;
-            if (inputsRef.current[i]) {
-                inputsRef.current[i]!.value = digit;
-            }
-        });
-
-        setOtp(newOtp)
-
-        //Focus the next empty input or the lase one
-        const nextIndex = pastedArray.length < otp.length ? pastedArray.length : otp.length - 1
-        inputsRef.current[nextIndex]?.focus()
-
-    }
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -115,16 +118,16 @@ const LoginPage = () => {
                 } else {
 
                     const newCount = attemptCount + 1;
-                    setAttemptCount(newCount);
+                    setAttemptCount('attemptCount', attemptCount);
+                    console.log(newCount)
+                    localStorage.setItem('login_attempt_count', String(newCount));
 
-                    if (newCount === 1) {
-                        setError(res?.error);
-                    } else if (newCount === 2) {
+                    if (newCount === 1 || newCount === 2) {
                         setError(res?.error);
                     } else if (newCount >= 3) {
                         setIsLocked(true);
-                        // setError(res?.error);
                     }
+
                 }
 
             } catch (err) {
@@ -164,7 +167,6 @@ const LoginPage = () => {
                         setIsPasswordInvalid(true)
                     } else if (newCount >= 3) {
                         setIsLocked(true);
-                        // setError(data?.error);
                     }
                 }
             } catch (err) {
@@ -192,17 +194,31 @@ const LoginPage = () => {
         }
     };
 
+    // OTP triggered by input change
     const handleOtpChange = async (index: number, value: string) => {
         // Only allow digits or empty string
         if (!/^[0-9]?$/.test(value)) return;
 
         const updatedOtp = [...otp];
-        updatedOtp[index] = value;
+
+        // Find first empty index (i.e., where to insert next digit)
+        const firstEmptyIndex = updatedOtp.findIndex((digit) => digit === "");
+
+        if (value) {
+            if (firstEmptyIndex === -1) return;
+            updatedOtp[firstEmptyIndex] = value;
+        } else {
+            const lastFilledIndex = [...updatedOtp].reverse().findIndex((digit) => digit !== "");
+            const indexToClear = updatedOtp.length - 1 - lastFilledIndex;
+            updatedOtp[indexToClear] = "";
+        }
+
         setOtp(updatedOtp);
 
+        const nextFocusIndex = updatedOtp.findIndex((digit) => digit === "");
         // Move to next input if character is typed
-        if (value && inputsRef.current[index + 1]) {
-            inputsRef.current[index + 1].focus();
+        if (value && inputsRef.current[nextFocusIndex]) {
+            inputsRef.current[nextFocusIndex].focus();
         }
 
         // ✅ Auto-submit when all digits are filled
@@ -229,10 +245,9 @@ const LoginPage = () => {
                 ])
 
                 if (data.error) {
-                    setShowToast(true);
-                    setToastType('no-connection')
-                    setError(data.errorMessage || "OTP verification failed.");
-                    return;
+                    console.log(data?.error)
+                    // setShowToast(true);
+                    // setToastType('unsuccess')
                 }
 
                 if (data?.success) {
@@ -241,11 +256,12 @@ const LoginPage = () => {
                     localStorage.setItem("access_token", accessToken);
 
                     setShowToast(true);
-                    setToastType('success');
+                    // setToastType('success');
                     setError("");
-
+                    navigate('/dashboard')
                 } else {
                     const newOtpAttempts = otpCount + 1;
+
                     setOtpCount(newOtpAttempts);
 
                     if (newOtpAttempts === 1) {
@@ -253,15 +269,108 @@ const LoginPage = () => {
                     } else if (newOtpAttempts === 2) {
                         setError(data?.error);
                     } else if (newOtpAttempts >= 3) {
-                        setIsLocked(true);
+                        setOtpLocked(true);
+                        console.log(otpLocked)
                     }
                 }
             } catch (error) {
-                console.error("OTP validation failed:", error);
                 setError("Failed to verify OTP. Please try again.");
             } finally {
                 setLoading(false);
             }
+        }
+    };
+
+    const handleOtpPast = async (e: React.ClipboardEvent<HTMLInputElement>) => {
+        e.preventDefault();
+        const pasted = e.clipboardData.getData("text").trim();
+
+        if (!/^\d{6}$/.test(pasted)) return;
+
+        const pastedArray = pasted.split("").slice(0, otp.length);
+        const newOtp = [...otp];
+
+        pastedArray.forEach((digit, i) => {
+            newOtp[i] = digit;
+            if (inputsRef.current[i]) {
+                inputsRef.current[i]!.value = digit;
+            }
+        });
+
+        setOtp(newOtp);
+
+        // Focus the next empty input or the last one
+        const nextIndex = pastedArray.length < otp.length ? pastedArray.length : otp.length - 1;
+        inputsRef.current[nextIndex]?.focus();
+
+        // ✅ Auto-submit manually when pasted
+        const enteredOtp = newOtp.join("").trim();
+
+        if (enteredOtp.length === 6) {
+            if (!/^\d{6}$/.test(enteredOtp)) {
+                setError("Please enter a valid 6-digit OTP.");
+                setShowToast(true);
+                return;
+            }
+
+            setLoading(true);
+
+            try {
+                const [data] = await Promise.all([
+                    validateOTP({
+                        method: 'email',
+                        otp: enteredOtp,
+                        username: username,
+                    }),
+                    new Promise(resolve => setTimeout(resolve, 3000)),
+                ]);
+
+                if (data?.error) {
+                    console.log(data.error);
+                    setShowToast(true);
+                    setToastType('unsuccess');
+                    setError(data.error);
+                }
+
+                if (data?.success) {
+                    const accessToken = data.data.access_token;
+                    localStorage.setItem("access_token", accessToken);
+                    setShowToast(true);
+                    setToastType('success');
+                    setError("");
+                    navigate('/dashboard');
+                } else {
+                    const newOtpAttempts = otpCount + 1;
+                    setOtpCount(newOtpAttempts);
+
+                    if (newOtpAttempts >= 3) {
+                        setOtpLocked(true);
+                    }
+
+                    setError(data?.error);
+                }
+            } catch (err) {
+                setError("Failed to verify OTP. Please try again.");
+            } finally {
+                setLoading(false);
+            }
+        }
+    };
+
+    const handleOtpKeyDown = (
+        e: React.KeyboardEvent<HTMLInputElement>,
+        index: number
+    ) => {
+        if (e.key === "Backspace" && !otp[index] && inputsRef.current[index - 1]) {
+            inputsRef.current[index - 1].focus();
+        }
+
+        if (e.key === "ArrowLeft" && inputsRef.current[index - 1]) {
+            inputsRef.current[index - 1].focus();
+        }
+
+        if (e.key === "ArrowRight" && inputsRef.current[index + 1]) {
+            inputsRef.current[index + 1].focus();
         }
     };
 
@@ -284,10 +393,27 @@ const LoginPage = () => {
         setIntervalId(id);
     };
 
-    const handleResetCode = () => {
+    const handleResetCode = async () => {
         if (timer > 0) return;
-        console.log('Resending OTP...')
-        startCountdown()
+        try {
+            const response = await resentOtp(username);
+            if (response.success) {
+                // Clear previous error
+                setError("");
+                // Optionally clear OTP inputs
+                setOtp(["", "", "", "", "", ""]);
+                // Restart timer
+                startCountdown();
+            } else {
+                setError(response.errorMessage || "Failed to resend OTP.");
+                setShowToast(true);
+                setToastType('unsuccess');
+            }
+        } catch (err) {
+            setError("An error occurred while resending the code.");
+            setShowToast(true);
+            setToastType('unsuccess');
+        }
     }
 
     const formatTime = (seconds: number): string => {
@@ -296,16 +422,29 @@ const LoginPage = () => {
         return `${minutes}:${secs}`;
     };
 
+    console.log('copy:', isCopy)
+
     return (
         <>
-            <div className={loading ? "scl--loading-semi-transparent" : "   "}></div>
+            {/*Black screen while loading*/}
+            <div className={loading ? "scl--loading-semi-transparent" : " "}></div>
+
+            {/*ToasterMessage*/}
             {showToast && (
                 <ToasterMessage type={toastType}/>
             )}
+
+            {/*Login username & password & otp Form*/}
             <div className="scl--login-page">
+                {/*Background Image*/}
                 <img src={BackgroundImage} alt=""/>
+                {/*Formulario de login*/}
                 <div className="scl--login-form">
-                    <div className="scl--login-form-background">
+                    {/*Company Logo*/}
+                    <div
+                        className={`scl--login-form-background ${step === "otp" ? "scl--login-form-background-otp" : ""}`}>
+
+                        {/*Company Logo*/}
                         <div className="scl--login-form-logo">
                             <img src={SCLLogo} alt=""/>
                             {step === "username" || step === 'otp' ? (
@@ -328,10 +467,13 @@ const LoginPage = () => {
                                 </div>
                             )}
                         </div>
-                        <div className="scl--login-form-field">
-                            <div className="scl--login-form-field-title">
-                                <h2>{isLocked ? "Account Temporarily Locked" : "Login"}</h2>
 
+                        {/*Form Title like "Username", "Password", "OTP"*/}
+                        <div
+                            className={`scl--login-form-field ${step === "otp" ? "scl--login-form-field-otp" : ""}`}>
+                            <div
+                                className={`scl--login-form-field-title ${step === "otp" ? "scl--login-form-field-otp-title-width" : ""}`}>
+                                <h2>{isLocked || otpLocked ? "Account Temporarily Locked" : "Login"}</h2>
                                 {step === "username" && !isLocked && (
                                     <p>Please input your username to continue your account.</p>
                                 )}
@@ -353,41 +495,34 @@ const LoginPage = () => {
                                     </p>
                                 )}
 
-                                {step === "otp" && isLocked && (
+                                {step === "otp" && !otpLocked && (
                                     <p>Please enter the 6-digit OTP code sent to your email.</p>
                                 )}
 
-                                {step === "otp" && !isLocked && (
-                                    (<p>Please input your 6 digit OTP code for continue your account.</p>)
+                                {step === "otp" && otpLocked && (
+                                    (<p>You have attempted verification code wrong too many times.</p>)
                                 )}
 
                             </div>
                             <div className="scl--login-form-field-input">
                                 <form onSubmit={handleSubmit}>
                                     {step === "otp" ? (
+                                        // OTP Input
                                         <div className={'scl--login-verify-otp'}>
                                             <div
                                                 className={`scl--login-verify-boxes ${
                                                     (error || isLocked ? "scl--login-verify-boxes-error-border" : "") +
-                                                    (isLocked ? "scl--locked" : "")
+                                                    (otpLocked ? " scl--otp-locked" : "")
                                                 }`}>
                                                 {[...Array(6)].map((_, index) => (
                                                     <input
                                                         key={index}
-                                                        disabled={isLocked}
+                                                        disabled={otpLocked}
                                                         type="text"
                                                         maxLength={1}
                                                         value={otp[index]}
                                                         onChange={(e) => handleOtpChange(index, e.target.value)}
-                                                        onKeyDown={(e) => {
-                                                            if (
-                                                                e.key === "Backspace" &&
-                                                                !otp[index] &&
-                                                                inputsRef.current[index - 1]
-                                                            ) {
-                                                                inputsRef.current[index - 1].focus();
-                                                            }
-                                                        }}
+                                                        onKeyDown={(e) => handleOtpKeyDown(e, index)}
                                                         onPaste={handleOtpPast}
                                                         ref={(el) => {
                                                             inputsRef.current[index] = el!;
@@ -396,22 +531,31 @@ const LoginPage = () => {
                                                 ))}
                                             </div>
                                             <span
-                                                className={`scl--otp-error ${error && step !== "otp" ? "visible" : ""}`}>{error}</span>
-                                            <div className="scl--login-verify-resend-code">
-                                                <span onClick={handleResetCode} style={{
-                                                    cursor: timer === 0 ? "" : "not-allowed",
-                                                    textDecoration: timer === 0 ? "" : "none",
-                                                    color: timer === 0 ? "#0d6efd" : "#999",
-                                                    userSelect: "none",
-                                                }}>Resend code?</span>
-                                                <span>{formatTime(timer)}</span>
-                                            </div>
+                                                className={`scl--otp-error${error && step !== "otp" ? "visible" : ""}`}>{!otpLocked && error}</span>
+                                            {!otpLocked && (
+                                                <div className="scl--login-verify-resend-code">
+                                                    <span
+                                                        onClick={handleResetCode}
+                                                        style={{
+                                                            cursor: timer === 0 ? "pointer" : "not-allowed",
+                                                            textDecoration: timer === 0 ? "underline" : "none",
+                                                            color: timer === 0 ? "#0d6efd" : "#999",
+                                                            userSelect: "none",
+                                                        }}
+                                                    >
+                                                      Resend code?
+                                                    </span>
+                                                    <span>{formatTime(timer)}</span>
+                                                </div>
+                                            )}
                                         </div>
                                     ) : (
+                                        // Username & Password Input
                                         <div
                                             className={`scl--login-full-form ${
                                                 (error || isLocked ? "scl--login-error-border" : "") +
-                                                (isLocked ? " scl--locked" : "") + (step === "password" && isPasswordInvalid ? " scl--lock-button" : "")
+                                                (isLocked ? " scl--locked" : "") + (step === "password" && isPasswordInvalid ? " scl--lock-button" : "") +
+                                                (step === "username" && inputValue.length >= 2 ? "scl--login-full-border" : "")
                                             }`}
                                         >
                                             <input
@@ -434,7 +578,7 @@ const LoginPage = () => {
                                                     className="scl--login-fn"
                                                 >
                                                     <div className="scl--login-copy" onClick={handleCopy}>
-                                                        {isCopy ? <span>Copied</span> : <MdContentCopy/>}
+                                                        {!isCopy ? <span>Copied</span> : <MdContentCopy/>}
                                                     </div>
                                                     <div
                                                         className="scl--login-retype"
@@ -448,8 +592,8 @@ const LoginPage = () => {
                                                 <button
                                                     type="submit"
                                                     className={
-                                                        `${step === "username" && inputValue.length >= 4 ? "scl--btn-active" : ""}
-                                                         ${step === "password" && inputValue.length >= 4 ? "scl--btn-active" : ""}
+                                                        `${step === "username" && inputValue.length >= 2 ? "scl--btn-active" : ""}
+                                                         ${step === "password" && inputValue.length >= 2 ? "scl--btn-active" : ""}
                                                         `
                                                     }
                                                 >
@@ -465,30 +609,41 @@ const LoginPage = () => {
                                         </div>
                                     )}
                                 </form>
+                                {/*{*/}
+                                {/*    step !== 'otp' && (<span*/}
+                                {/*        className={`scl--login-error ${step !== 'otp' && error ? "visible" : ""}`}>{error}</span>)*/}
+                                {/*}*/}
                                 {
-                                    step !== 'otp' && <span
-                                        className={`scl--login-error ${error ? "visible" : ""}`}>{error}</span>
+                                    step !== 'otp' && (<span
+                                        className={`scl--login-error ${error ? "visible" : ""}`}>{error}</span>)
                                 }
                             </div>
                         </div>
                     </div>
+
+                    {/*Loading Animation*/}
                     {loading && (
                         <span className="scl--barloader-container">
                             <span className="scl--spinner-item"></span>
                         </span>
                     )}
 
+                    {/*Policy*/}
                     <div className="scl--login-text-policy">
-                        <p>English (United State)</p>
+                        <p>English (United State) <svg width="8" height="4" viewBox="0 0 8 4" fill="none"
+                                                       xmlns="http://www.w3.org/2000/svg">
+                            <path d="M4 4L0 0H8L4 4Z" fill="white" fill-opacity="0.6"/>
+                        </svg>
+                        </p>
                         <ul>
                             <li>
-                                <a href="">Help</a>
+                                <p>Help</p>
                             </li>
                             <li>
-                                <a href="">Privacy</a>
+                                <p>Privacy</p>
                             </li>
                             <li>
-                                <a href="">Term</a>
+                                <p>Term</p>
                             </li>
                         </ul>
                     </div>
