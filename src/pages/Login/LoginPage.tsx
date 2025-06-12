@@ -9,6 +9,7 @@ import ToasterMessage from "../../components/ToasterMessages/ToasterMessage.tsx"
 import {useAuth} from "../../hooks/useAuth.ts";
 import {resentOtp, validateOTP} from "../../api/otpAuth.ts";
 import {isLockStatus} from "../../api/isLocked.ts";
+import {toggleDarkMode} from "../../ustils/theme.ts";
 
 const LoginPage = () => {
     const {checkUsername, checkPassword} = useAuth();
@@ -37,7 +38,7 @@ const LoginPage = () => {
     const inputRef = useRef<HTMLInputElement>(null);
     const inputsRef = useRef<HTMLInputElement[]>([]);
     const [isPasswordInvalid, setIsPasswordInvalid] = useState<boolean>(false);
-    // const {step: stepFromUrl} = useParams<{ step?: string }>();
+    const [dark, setDark] = useState(localStorage.getItem("isDark") === "true");
     const navigate = useNavigate();
 
     //Toaster Message
@@ -421,7 +422,9 @@ const LoginPage = () => {
     };
 
     const handleToggleDarkMode = () => {
-        alert('Dark mode is not available yet')
+        const newMode = !dark;
+        setDark(newMode);
+        toggleDarkMode(newMode);
     }
 
     return (
@@ -506,7 +509,8 @@ const LoginPage = () => {
                                 )}
 
                             </div>
-                            <div className="scl--login-form-field-input">
+                            <div
+                                className={`scl--login-form-field-input ${step === "otp" ? "scl--login-form-field-otp-input" : ""}`}>
                                 <form onSubmit={handleSubmit}>
                                     {step === "otp" ? (
                                         // OTP Input
@@ -600,11 +604,12 @@ const LoginPage = () => {
                                                         `
                                                     }
                                                 >
-                                                    <svg width="37" height="31" viewBox="0 0 37 31" fill="none"
+                                                    <svg className="svg-login-btn" width="37" height="31"
+                                                         viewBox="0 0 37 31" fill="none"
                                                          xmlns="http://www.w3.org/2000/svg">
                                                         <path
                                                             d="M34.5 15.5L35.4959 14.7445L36.069 15.5L35.4959 16.2555L34.5 15.5ZM1.5 16.75C0.809643 16.75 0.25 16.1904 0.25 15.5C0.25 14.8096 0.809643 14.25 1.5 14.25V16.75ZM23.5 1L24.4959 0.244517L35.4959 14.7445L34.5 15.5L33.5041 16.2555L22.5041 1.75548L23.5 1ZM34.5 15.5L35.4959 16.2555L24.4959 30.7555L23.5 30L22.5041 29.2445L33.5041 14.7445L34.5 15.5ZM34.5 15.5V16.75H1.5V15.5V14.25H34.5V15.5Z"
-                                                            fill="#CBC9C9"
+                                                            fill="white"
                                                         />
                                                     </svg>
                                                 </button>

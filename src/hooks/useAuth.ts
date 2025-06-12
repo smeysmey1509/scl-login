@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import {verifyUsername, verifyPassword} from '../api/accessAccount';
+import {verifyUsername, verifyPassword} from '../api/User.ts';
 import type {VerifyUsernameResponse, VerifyPasswordResponse} from '../types/accessAccount.ts';
 
 export const useAuth = () => {

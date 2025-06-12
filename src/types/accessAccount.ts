@@ -1,4 +1,4 @@
-// types.ts or in accessAccount.ts
+// types.ts or in User.ts
 export interface VerifyUsernameResponse {
     success: boolean;
     requestId: string;
