@@ -15,6 +15,7 @@ const LoginPage = () => {
     const [step, setStep] = useState<"username" | "password" | "otp">("username");
     const [inputValue, setInputValue] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
+    const [copyStatus, setCopyStatus] = useState<string>('');
     const [isCopy, setIsCopy] = useState<boolean>(false);
     const [username, setUsername] = useState<string>("");
     const [password, setPassword] = useState<string>("");
@@ -80,19 +81,8 @@ const LoginPage = () => {
         }
     };
 
-    const handleCopy = () => {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(inputValue)
-                .then(() => {
-                    setIsCopy(true);
-                    setTimeout(() => setIsCopy(false), 1000);
-                })
-                .catch(err => {
-                    console.error("Copy failed:", err);
-                });
-        } else {
-            console.error("Clipboard API not supported.");
-        }
+    const handleCopy = async () => {
+        setIsCopy(!isCopy)
     };
 
     const handleRetype = () => {
@@ -430,12 +420,16 @@ const LoginPage = () => {
         return `${minutes}:${secs}`;
     };
 
-    console.log('isCopy', isCopy)
+    const handleToggleDarkMode = () => {
+        alert('Dark mode is not available yet')
+    }
 
     return (
         <>
             {/*Black screen while loading*/}
             <div className={loading ? "scl--loading-semi-transparent" : " "}></div>
+
+            <button className={'scl--darkmode-toggle'} onClick={handleToggleDarkMode}>Toggle</button>
 
             {/*ToasterMessage*/}
             {showToast && (

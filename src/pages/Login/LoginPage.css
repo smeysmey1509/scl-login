@@ -22,10 +22,13 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 1223px;
-    height: 402px;
-    padding: 45px;
-    background: rgba(0, 0, 0, 0.5);
+    /*width: 1223px;*/
+    width: 1070px;
+    /*height: 402px;*/
+    height: 374px;
+    /*padding: 45px;*/
+    padding: 0;
+    background: rgba(11, 17, 19, 0.6);
     border-radius: 12px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     display: flex;
@@ -38,10 +41,11 @@
 /* Login Form */
 
 .scl--login-page .scl--login-form .scl--login-form-background {
-    width: 1135px;
+    /*width: 1135px;*/
+    width: 1011px;
     height: 280px;
     border-radius: 12px;
-    border: 1px solid #3b3b3b;
+    border: 1px solid #3B3B3B;
     background-color: #171717;
     display: flex;
     justify-content: space-around;
@@ -88,13 +92,15 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    padding-right: 45px;
-    /*gap: 27px;*/
+    /*justify-content: center;*/
+    padding: 45px;
+    /*gap: 26px;*/
 }
 
 .scl--login-form-field-otp {
-    /*margin-top: 17px;*/
+    padding-left: 45px;
+    padding-bottom: 45px;
+    padding-top: 45px;
 }
 
 .scl--login-form-field-title h2 {
@@ -116,8 +122,8 @@
     height: 50%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    gap: 8px;
+    /*justify-content: center;*/
+    gap: 12px;
 }
 
 .scl--login-form-field-otp-title-width {
@@ -444,7 +450,8 @@
 
 /* Policy Login */
 .scl--login-text-policy {
-    width: 1135px;
+    /*width: 1135px;*/
+    width: 1011px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -454,7 +461,8 @@
 .scl--login-text-policy p {
     font-size: 14px;
     line-height: 16px;
-    margin-right: 12px;
+    /*margin-right: 12px;*/
+    margin-right: 0;
     color: #f0f0f0;
     font-weight: 400;
     padding: 6px 16px;
@@ -512,6 +520,8 @@
 }
 
 .scl--login-verify-boxes {
+    width: 100%;
+    height: 100%;
     display: flex;
     justify-items: center;
     align-items: center;
@@ -519,8 +529,8 @@
 }
 
 .scl--login-verify-boxes input[type="text"] {
-    width: 64px;
-    height: 64px;
+    width: 54px;
+    height: 54px;
     border: 2px solid #ffffff;
     background-color: transparent;
     border-radius: 6px;
@@ -685,4 +695,13 @@
         left: 107%;
         right: -8%;
     }
+}
+
+
+/*Darkmode Toggle Button*/
+.scl--darkmode-toggle {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1000;
 }
