@@ -1,0 +1,37 @@
+.rs--hamburger-container {
+    cursor: pointer;
+    height: 48px;
+    position: relative;
+    transition: 0.4s cubic-bezier(0, 0, 0, 1);
+    user-select: none;
+    width: 48px;
+    outline: none;
+    background-color: #3B3B3B;
+}
+
+.rs--hamburger-container div:nth-child(1) {
+    background-color: red;
+    height: 3px;
+    left: 6px;
+    position: absolute;
+    width: 36px;
+    top: 16px;
+    transition: 0.4s cubic-bezier(0, 0, 0, 1);
+    transform: none;
+}
+
+/* === When Open === */
+.rs--hamburger-container.open div:nth-child(1) {
+    transform: rotate(45deg) translate(4.59px, 4.59px);
+}
+
+.rs--hamburger-container div:nth-child(2) {
+    background-color: blue;
+    height: 3px;
+    left: 6px;
+    position: absolute;
+    width: 36px;
+    top: 29px;
+    transition: 0.4s cubic-bezier(0, 0, 0, 1);
+    transform: none;
+}
