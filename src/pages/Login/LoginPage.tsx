@@ -1,5 +1,5 @@
 import React, {type FormEvent, useEffect, useRef, useState,} from "react";
-import {useNavigate, useParams} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import "./LoginPage.css";
 import BackgroundImage from "../../assets/scl-loginbg.jpg";
 import Profile from "../../assets/profile.jpg";
@@ -9,24 +9,21 @@ import ToasterMessage from "../../components/ToasterMessages/ToasterMessage.tsx"
 import {useAuth} from "../../hooks/useAuth.ts";
 import {resentOtp, validateOTP} from "../../api/otpAuth.ts";
 import {isLockStatus} from "../../api/isLocked.ts";
-import {toggleDarkMode} from "../../ustils/theme.ts";
+import {toggleDarkMode} from "../../utils/theme.ts";
+import BarLoader from "../../components/Loading/Barloader/Loading.tsx";
 
 const LoginPage = () => {
     const {checkUsername, checkPassword} = useAuth();
     const [step, setStep] = useState<"username" | "password" | "otp">("username");
     const [inputValue, setInputValue] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
-    const [copyStatus, setCopyStatus] = useState<string>('');
     const [isCopy, setIsCopy] = useState<boolean>(false);
     const [username, setUsername] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
     const [error, setError] = useState<string>("");
     const [showPassword, setShowPassword] = useState(false);
-    const [attemptCount, setAttemptCount] = useState(() => {
-        const stored = localStorage.getItem('login_attempt_count');
-        return stored ? parseInt(stored, 10) : 0;
-    });
+    const [attemptCount, setAttemptCount] = useState<number>(0);
     const [passwordAttemptCount, setPasswordAttemptCount] = useState<number>(0);
     const [otpCount, setOtpCount] = useState<number>(0);
     const [isLocked, setIsLocked] = useState<boolean>();
@@ -38,7 +35,7 @@ const LoginPage = () => {
     const inputRef = useRef<HTMLInputElement>(null);
     const inputsRef = useRef<HTMLInputElement[]>([]);
     const [isPasswordInvalid, setIsPasswordInvalid] = useState<boolean>(false);
-    const [dark, setDark] = useState(localStorage.getItem("isDark") === "true");
+    const [dark, setDark] = useState<boolean>(false);
     const navigate = useNavigate();
 
     //Toaster Message
@@ -115,18 +112,16 @@ const LoginPage = () => {
                     setInputValue('');
                     setAttemptCount(0);
                 } else {
-
                     const newCount = attemptCount + 1;
-                    setAttemptCount('attemptCount', attemptCount);
-                    console.log(newCount)
-                    localStorage.setItem('login_attempt_count', String(newCount));
+                    setAttemptCount(newCount);
 
-                    if (newCount === 1 || newCount === 2) {
+                    if (newCount === 1) {
+                        setError(res?.error);
+                    } else if (newCount === 2) {
                         setError(res?.error);
                     } else if (newCount >= 3) {
                         setIsLocked(true);
                     }
-
                 }
 
             } catch (err) {
@@ -194,7 +189,7 @@ const LoginPage = () => {
     };
 
     // OTP triggered by input change
-    const handleOtpChange = async (index: number, value: string) => {
+    const handleOtpChange = async (value: string) => {
         // Only allow digits or empty string
         if (!/^[0-9]?$/.test(value)) return;
 
@@ -454,7 +449,7 @@ const LoginPage = () => {
                             <img src={SCLLogo} alt=""/>
                             {step === "username" || step === 'otp' ? (
                                 <p>
-                                    {step === "otp" ? "Your password was verify. We’ve send verification code to your authentication app. " : "With your username to continue. This account will be available"}
+                                    {step === "otp" ? "Your password was verify. We’ve send activation code to your authentication app." : "With your username to continue. This account will be available"}
                                     to other Sodexs applications.
                                 </p>
                             ) : (
@@ -561,8 +556,8 @@ const LoginPage = () => {
                                             className={`scl--login-full-form ${
                                                 (error || isLocked ? "scl--login-error-border" : "") +
                                                 (isLocked ? " scl--locked" : "") + (step === "password" && isPasswordInvalid ? " scl--lock-button" : "") +
-                                                (step === "username" && inputValue.length >= 2 ? "scl--login-full-border" : "") +
-                                                (step === "password" && inputValue.length >= 2 ? "scl--login-full-border" : "")
+                                                (step === "username" && inputValue.length >= 2 ? " scl--login-full-border" : "") +
+                                                (step === "password" && inputValue.length >= 2 ? " scl--login-full-border" : "")
                                             }`}
                                         >
                                             <input
@@ -626,9 +621,16 @@ const LoginPage = () => {
                     </div>
 
                     {/*Loading Animation*/}
+                    {/*{loading && (*/}
+                    {/*    <span className="scl--barloader-container">*/}
+                    {/*        <span className="scl--spinner-item"></span>*/}
+                    {/*    </span>*/}
+                    {/*)}*/}
+
+                    {/*Loading Animation*/}
                     {loading && (
                         <span className="scl--barloader-container">
-                            <span className="scl--spinner-item"></span>
+                            <BarLoader/>
                         </span>
                     )}
 
